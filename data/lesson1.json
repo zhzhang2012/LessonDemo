@@ -1,0 +1,195 @@
+{
+    "title": "1",
+    "summary": "11111111",
+    "activities": [
+         {
+            "id":"activity1",
+            "title": "a1",
+            "type": "lecture",
+            "body": "aaaaaaaaaaaaaaaaaaaaaa",
+            "is_final": false
+        },
+        {
+            "id":"activity2",
+            "title": "a2",
+            "type": "quiz",
+            "body": "aaaaaa",
+            "is_final": false,
+            "randomize_problems": true,
+            "randomize_choices": true,
+            "problems": [
+                {
+                    "id": "a2p1",
+                    "title": "a2p1",
+                    "type": "singlechoice",
+                    "choices": [
+                        {
+                            "id": "a2p1c1",
+                            "body": "2ya1",
+                            "is_correct": false
+                        },
+                        {
+                            "id": "a2p1c2",
+                            "body": "2ya2",
+                            "is_correct": false
+                        },
+                        {
+                            "id": "a2p1c3",
+                            "body": "2ya3",
+                            "is_correct": true
+                        },
+                        {
+                            "id": "a2p1c4",
+                            "body": "2ya4",
+                            "is_correct": false
+                        }
+                    ]
+                },
+                {
+                    "id": "a2p2",
+                    "title": "a2p2",
+                    "type": "singlechoice",
+                    "choices": [
+                        {
+                            "id": "a2p2c1",
+                            "body": "2ya1",
+                            "is_correct": false
+                        },
+                        {
+                            "id": "a2p2c2",
+                            "body": "2ya2",
+                            "is_correct": false
+                        },
+                        {
+                            "id": "a2p2c3",
+                            "body": "2ya3",
+                            "is_correct": true
+                        },
+                        {
+                            "id": "a2p2c4",
+                            "body": "2ya4",
+                            "is_correct": false
+                        }
+                    ]
+                },
+                {
+                    "id": "a2p3",
+                    "title": "a2p3",
+                    "type": "singlechoice",
+                    "choices": [
+                        {
+                            "id": "a2p3c1",
+                            "body": "2ya1",
+                            "is_correct": false
+                        },
+                        {
+                            "id": "a2p3c2",
+                            "body": "2ya2",
+                            "is_correct": false
+                        },
+                        {
+                            "id": "a2p3c3",
+                            "body": "2ya3",
+                            "is_correct": true
+                        },
+                        {
+                            "id": "a2p3c4",
+                            "body": "2ya4",
+                            "is_correct": false
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "activity3",
+            "title": "a3",
+            "type": "quiz",
+            "body": "aaaaaa",
+            "is_final": true,
+            "problems": [
+                {
+                    "id": "a3p1",
+                    "title": "a3p1",
+                    "type": "singlechoice",
+                    "choices": [
+                        {
+                            "id": "a3p1c1",
+                            "body": "2ya1",
+                            "is_correct": false
+                        },
+                        {
+                            "id": "a3p1c2",
+                            "body": "2ya2",
+                            "is_correct": false
+                        },
+                        {
+                            "id": "a3p1c3",
+                            "body": "2ya3",
+                            "is_correct": true
+                        },
+                        {
+                            "id": "a3p1c4",
+                            "body": "2ya4",
+                            "is_correct": false
+                        }
+                    ]
+                },
+                {
+                    "id": "a3p2",
+                    "title": "a3p2",
+                    "type": "singlechoice",
+                    "choices": [
+                        {
+                            "id": "a3p2c1",
+                            "body": "2ya1",
+                            "is_correct": false
+                        },
+                        {
+                            "id": "a3p2c2",
+                            "body": "2ya2",
+                            "is_correct": false
+                        },
+                        {
+                            "id": "a3p2c3",
+                            "body": "2ya3",
+                            "is_correct": true
+                        },
+                        {
+                            "id": "a3p2c4",
+                            "body": "2ya4",
+                            "is_correct": false
+                        }
+                    ]
+                },
+                {
+                    "id": "a3p3",
+                    "title": "a3p3",
+                    "type": "singlechoice",
+                    "choices": [
+                        {
+                            "id": "a3p3c1",
+                            "body": "2ya1",
+                            "is_correct": false
+                        },
+                        {
+                            "id": "a3p3c2",
+                            "body": "2ya2",
+                            "is_correct": false
+                        },
+                        {
+                            "id": "a3p3c3",
+                            "body": "2ya3",
+                            "is_correct": true
+                        },
+                        {
+                            "id": "a3p3c4",
+                            "body": "2ya4",
+                            "is_correct": false
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
