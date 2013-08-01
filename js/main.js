@@ -216,25 +216,34 @@ app.controller('activityCtrl', function ($scope, $routeParams, MaterialProvider,
         } else {
 
             //check if the student has finished the current activity
-            //if yes, turn to the next activity, update the current_activity attribute, and reset problemIndex
             if (MaterialProvider.lessonData.activities[currentAct].type === "lecture" || PageTransitions.isFinal()) {
-                LessonService.TMPDATA.currActivityIndex++;
-                LessonService.TMPDATA.currProblemIndex = 0;
-                LessonService.USERDATA.current_activity = MaterialProvider.lessonData.
-                    activities[LessonService.TMPDATA.currActivityIndex].id;
-                LessonService.continueLesson(LessonService.USERDATA.current_activity);
 
-                //the student stays in the middle of a quiz activity
-                //update current_problem attribute and use a page transition
+                //check if the student has finished all the activities and is reviewing an activity right now
+                //if yes, return to the lesson page
+                if (LessonService.USERDATA.is_complete) {
+                    LessonService.TMPDATA.currProblemIndex = 0;
+                    LessonService.FSM.complete();
+
+                //the student is not reviewing an activity now
+                //turn to the next activity, update the current_activity attribute, and reset problemIndex
+                } else {
+                    LessonService.TMPDATA.currActivityIndex++;
+                    LessonService.TMPDATA.currProblemIndex = 0;
+                    LessonService.USERDATA.current_activity = MaterialProvider.lessonData.
+                        activities[LessonService.TMPDATA.currActivityIndex].id;
+                    LessonService.continueLesson(LessonService.USERDATA.current_activity);
+                }
+
+            //the student stays in the middle of a quiz activity
+            //update current_problem attribute and use a page transition
             } else {
                 LessonService.TMPDATA.currProblemIndex++;
                 LessonService.USERDATA.activities[LessonService.USERDATA.current_activity].current_problem =
                     MaterialProvider.lessonData.activities[LessonService.TMPDATA.currActivityIndex].
                         problems[LessonService.TMPDATA.currProblemIndex].id;
 
-                PageTransitions.nextPage(24,$("#buttonContainer"));
+                PageTransitions.nextPage(24, $("#buttonContainer"));
             }
-
         }
     }
 
@@ -272,7 +281,7 @@ app.directive("problem", function (MaterialProvider, LessonService) {
         link: function (scope) {
 
             //send a complete event to switch directive after loading all the problems
-            scope.$watch("problemShow", function(){
+            scope.$watch("problemShow", function () {
                 if (scope.$last) {
                     scope.$emit("complete");
                 }
