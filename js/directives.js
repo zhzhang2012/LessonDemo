@@ -87,6 +87,9 @@ angular.module('LessonDemo.directives', [])
                     }
                 }
                 $scope.reviewActivity = function (activityId) {
+                    if (typeof lessonUserdata.activities[activityId].current_problem !== 'undefined') {
+                        lessonUserdata.activities[activityId].current_problem = undefined;
+                    }
                     FSM.resume(activityId);
                 }
                 //listen to the pause activity request sent by an activity module
@@ -289,6 +292,7 @@ angular.module('LessonDemo.directives', [])
         }
     })
 
+    //the outsider of problem directive used for getting the problem DOM collection
     .directive("switch", function ($timeout) {
         return {
             link: function ($scope, $element) {
