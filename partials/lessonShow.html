@@ -1,16 +1,25 @@
-<div id="pt-main" class="pt-perspective">
-    <div ng-show="lecture" style="background-color: #a0a0a0">
-        <span>lecture标题： {{title}}</span><br>
-        <span>lecture内容：{{body}}</span>
-    </div>
-    <div switch>
-        <div class="pt-page pt-page-{{$index+1}}" ng-repeat='problem in problems' ng-model="problemShow" problem></div>
-    </div>
-</div>
-<div id="buttonContainer">
-    <button ng-hide="last" class="pt-touch-button pt-triggers" ng-click='continueLearn()'>继&nbsp;续
-    </button>
-    <button ng-hide="last" class="pt-touch-button pt-triggers" style="top:80%" ng-click='pauseLearn()'>返&nbsp;回</button>
-</div>
+<lesson>
+    <activity>
 
+        <div id="pt-main" class="pt-perspective">
+            <div ng-show="lecture" style="background-color: #a0a0a0">
+                <span>lecture标题： {{title}}</span><br>
+                <span>lecture内容：{{body}}</span>
+            </div>
+            <div switch>
+                <problem id="{{ problem.id }}" class="pt-page pt-page-{{ $index+1 }}" ng-repeat='problem in problems'
+                         ng-model="problemShow"
+                         activity=true></problem>
+            </div>
+
+        </div>
+        <div id="buttonContainer">
+            <button ng-hide="hideContinueButton" class="pt-touch-button pt-triggers" style="top:300px"
+                    ng-click='continueActivity()'>继&nbsp;续
+            </button>
+            <button class="pt-touch-button pt-triggers" style="top:400px" ng-click='pauseLearn()'>返&nbsp;回</button>
+        </div>
+
+    </activity>
+</lesson>
 <script src="js/pagetransitions.js"></script>

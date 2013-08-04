@@ -19,11 +19,10 @@ var PageTransitions = (function () {
     // support css animations
         support = Modernizr.cssanimations;
 
-    function initParams(main, currProblem) {
+    function initParams(main) {
         $main = main;
-        $pages = $main.children('div.pt-page');
+        $pages = $main.children();
         pagesCount = $pages.length;
-        current = currProblem;
 
         $pages.each(function () {
             var $page = $(this);
@@ -35,7 +34,7 @@ var PageTransitions = (function () {
 
     function init(main) {
 
-        initParams(main, 0);
+        initParams(main);
 
         //$iterate.on( 'click', function() {
         if (isAnimating) {
@@ -44,7 +43,7 @@ var PageTransitions = (function () {
         if (animcursor > 67) {
             animcursor = 1;
         }
-        nextPage(animcursor);
+        nextPage(16);
         ++animcursor;
         //} );
 
@@ -58,7 +57,7 @@ var PageTransitions = (function () {
         }
     }
 
-    function nextPage(animation, buttonContainer) {
+    function nextPage(animation) {
 
         if (isAnimating) {
             return false;
@@ -72,9 +71,9 @@ var PageTransitions = (function () {
             ++current;
         }
 
-        if(buttonContainer){
-            buttonContainer.hide();
-        }
+        /*if(buttonContainer){
+         buttonContainer.hide();
+         }*/
 
         var $nextPage = $pages.eq(current).addClass('pt-page-current'),
             outClass = '', inClass = '';
@@ -385,9 +384,9 @@ var PageTransitions = (function () {
         $outpage.attr('class', $outpage.data('originalClassList'));
         $inpage.attr('class', $inpage.data('originalClassList') + ' pt-page-current');
 
-        if(buttonContainer){
-            buttonContainer.show();
-        }
+        /*if(buttonContainer){
+         buttonContainer.show();
+         }*/
     }
 
     //init();

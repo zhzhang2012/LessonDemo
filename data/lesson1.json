@@ -1,27 +1,33 @@
 {
+    "id": "lesson1",
     "title": "1",
     "summary": "11111111",
     "activities": [
-         {
-            "id":"activity1",
+        {
+            "id": "activity1",
             "title": "a1",
             "type": "lecture",
             "body": "aaaaaaaaaaaaaaaaaaaaaa",
             "is_final": false
+
         },
         {
-            "id":"activity2",
+            "id": "activity2",
             "title": "a2",
             "type": "quiz",
             "body": "aaaaaa",
             "is_final": false,
             "randomize_problems": true,
             "randomize_choices": true,
+            "show_answer": true,
+            "jump": "to_activity_if_correctness:activity3:>=40%",
             "problems": [
                 {
                     "id": "a2p1",
+                    "parent_id": "activity2",
                     "title": "a2p1",
                     "type": "singlechoice",
+                    "explanation": "explaina2p1",
                     "choices": [
                         {
                             "id": "a2p1c1",
@@ -47,8 +53,10 @@
                 },
                 {
                     "id": "a2p2",
+                    "parent_id": "activity2",
                     "title": "a2p2",
-                    "type": "singlechoice",
+                    "type": "multichoice",
+                    "explanation": "explaina2p2",
                     "choices": [
                         {
                             "id": "a2p2c1",
@@ -58,7 +66,7 @@
                         {
                             "id": "a2p2c2",
                             "body": "2ya2",
-                            "is_correct": false
+                            "is_correct": true
                         },
                         {
                             "id": "a2p2c3",
@@ -74,30 +82,11 @@
                 },
                 {
                     "id": "a2p3",
+                    "parent_id": "activity2",
                     "title": "a2p3",
-                    "type": "singlechoice",
-                    "choices": [
-                        {
-                            "id": "a2p3c1",
-                            "body": "2ya1",
-                            "is_correct": false
-                        },
-                        {
-                            "id": "a2p3c2",
-                            "body": "2ya2",
-                            "is_correct": false
-                        },
-                        {
-                            "id": "a2p3c3",
-                            "body": "2ya3",
-                            "is_correct": true
-                        },
-                        {
-                            "id": "a2p3c4",
-                            "body": "2ya4",
-                            "is_correct": false
-                        }
-                    ]
+                    "type": "singlefilling",
+                    "correct_answer": "iampig",
+                    "explanation": "explaina2p3"
                 }
             ]
         },
@@ -110,6 +99,7 @@
             "problems": [
                 {
                     "id": "a3p1",
+                    "parent_id": "activity3",
                     "title": "a3p1",
                     "type": "singlechoice",
                     "choices": [
@@ -138,6 +128,7 @@
                 {
                     "id": "a3p2",
                     "title": "a3p2",
+                    "parent_id": "activity3",
                     "type": "singlechoice",
                     "choices": [
                         {
@@ -165,6 +156,7 @@
                 {
                     "id": "a3p3",
                     "title": "a3p3",
+                    "parent_id": "activity3",
                     "type": "singlechoice",
                     "choices": [
                         {

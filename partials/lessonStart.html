@@ -1,19 +1,25 @@
-<body>
-<button ng-click="startLesson()">lesson1</button>
-<button>lesson2</button>
-<button>lesson3</button>
-<button>lesson4</button>
-<button>lesson5</button>
-<button>lesson6</button>
-<div ng-show="startLesson" style="width:500px;height:300px;top:30%;left:30%;position:absolute;background-color: white;color:black">
-    <span>课程名称：{{title}}</span><br>
-    <span>课程梗概：{{summary}}</span><br><br>
-    <button ng-click="startLearn()">{{buttonMsg}}</button>
-</div>
-<div ng-show="reviewLesson" style="width:500px;height:300px;top:30%;left:30%;position:absolute;background-color: white;color:black">
-    <span>已经完成啦</span><br><br>
-    <span>课程名称：{{title}}</span><br>
-    <span>课程梗概：{{summary}}</span><br><br>
-    <review ng-repeat="button in buttons"></review>
-</div>
-</body>
+<lesson>
+    <body>
+    <button ng-click="startLesson()">lesson1</button>
+    <button>lesson2</button>
+    <button>lesson3</button>
+    <button>lesson4</button>
+    <button>lesson5</button>
+    <button>lesson6</button>
+    <div>
+        <div ng-show="startLesson"
+             style="width:500px;height:300px;top:30%;left:30%;position:absolute;background-color: white;color:black">
+            <span>课程名称：{{title}}</span><br>
+            <span>课程梗概：{{summary}}</span><br><br>
+            <button ng-click="enterActivity()">{{buttonMsg}}</button>
+        </div>
+        <div ng-show="reviewLesson"
+             style="width:500px;height:300px;top:30%;left:30%;position:absolute;background-color: white;color:black">
+            <span>已经完成啦</span><br><br>
+            <span>课程名称：{{title}}</span><br>
+            <span>课程梗概：{{summary}}</span><br><br>
+            <review ng-repeat="activity in activities"></review>
+        </div>
+    </div>
+    </body>
+</lesson>
