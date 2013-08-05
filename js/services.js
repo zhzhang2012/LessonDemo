@@ -32,13 +32,14 @@ angular.module('LessonDemo.services', [])
                         "randomize_problems": true,
                         "randomize_choices": true,
                         "show_answer": true,
-                        "jump": "to_activity_if_correctness:activity1:<=40%",
+                        "jump": "to_activity_if_correctness:activity1:<2",
                         "problems": [
                             {
                                 "id": "a2p1",
                                 "parent_id": "activity2",
                                 "title": "a2p1",
                                 "type": "singlechoice",
+                                "hint": "I don't know",
                                 "explanation": "explaina2p1",
                                 "choices": [
                                     {
@@ -108,6 +109,7 @@ angular.module('LessonDemo.services', [])
                         "type": "quiz",
                         "body": "aaaaaa",
                         "is_final": true,
+                        "redoable": false,
                         "problems": [
                             {
                                 "id": "a3p1",

@@ -1,6 +1,8 @@
 <div id='problem{{$index}}'>
     <div ng-hide='showExplanation'>
         <span>题目名称：{{problem.title}}</span><br>
+        <button ng-show="showHintButton" ng-click="showHint()">显示暗示</button>
+        <span ng-show="showHintBox">{{ hint }}</span>
 
         <div ng-repeat='choice in problem.choices' choices>
             <label for='problem{{$parent.$index}}_choice{{$index}}' ng-click='chooseOption(choice.id)'><input

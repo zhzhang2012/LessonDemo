@@ -64,7 +64,7 @@ angular.module('LessonDemo.directives', [])
                 $scope.title = lessonData.title;
                 $scope.summary = lessonData.summary;
                 $scope.activities = lessonData.activities;
-                if (typeof lessonUserdata.current_activity == "undefined") {
+                if (typeof lessonUserdata.current_activity === "undefined") {
                     $scope.buttonMsg = "开始学习";
                 } else {
                     $scope.buttonMsg = "继续学习";
@@ -74,11 +74,18 @@ angular.module('LessonDemo.directives', [])
                     if (!lessonUserdata.is_complete) {
                         $scope.startLesson = true;
                     } else {
+                        //remove activities that are not redoable
+                        for (var i = 0; i < lessonData.activities.length; i++) {
+                            if ((typeof lessonData.activities[i].redoable !== "undefined") &&
+                                (!lessonData.activities[i].redoable)) {
+                                $scope.activities.splice(i, 1);
+                            }
+                        }
                         $scope.reviewLesson = true;
                     }
                 }
                 $scope.enterActivity = function () {
-                    if (typeof lessonUserdata.current_activity == "undefined") {
+                    if (typeof lessonUserdata.current_activity === "undefined") {
                         lessonUserdata.current_activity = lessonData.activities[0].id;
                         FSM.enter(lessonData.activities[0].id);
                     } else {
@@ -250,7 +257,7 @@ angular.module('LessonDemo.directives', [])
 
                                         /* TODO
                                          * the third type of jump logic
-                                         * */
+                                         */
                                     }
 
                                 } else {
@@ -280,7 +287,7 @@ angular.module('LessonDemo.directives', [])
 
                                 /* TODO
                                  * the third type of jump logic
-                                 * */
+                                 */
                             }
                         } else {
                             //send activity complete event to lesson directive
@@ -324,10 +331,16 @@ angular.module('LessonDemo.directives', [])
                 });
 
                 //init ng-models
-                $scope.title = currProblem.title;
                 $scope.answer = {};
-                if (parentActivityData.show_answer) {
+                if ((typeof parentActivityData.show_answer !== "undefined") && (parentActivityData.show_answer)) {
                     $scope.explanation = currProblem.explanation;
+                }
+                if (typeof currProblem.hint !== "undefined") {
+                    $scope.hint = currProblem.hint;
+                    $scope.showHintButton = true;
+                    $scope.showHint = function () {
+                        $scope.showHintBox = true;
+                    }
                 }
 
                 //when the student complete the problem
@@ -374,7 +387,7 @@ angular.module('LessonDemo.directives', [])
                         }
                     }
 
-                    if (parentActivityData.show_answer) {
+                    if ((typeof parentActivityData.show_answer !== "undefined") && (parentActivityData.show_answer)) {
                         $scope.showExplanation = true;
                         $scope.hideSubmitButton = true;
                         $scope.showContinueButton = true;
