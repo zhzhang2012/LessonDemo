@@ -28,10 +28,11 @@ angular.module('LessonDemo.services', [])
                         "title": "a2",
                         "type": "quiz",
                         "body": "aaaaaa",
-                        "is_final": false,
+                        "is_final": true,
                         "randomize_problems": true,
                         "randomize_choices": true,
                         "show_answer": true,
+                        //"jump": "end_of_lesson_if_correctness:=3",
                         "jump": "to_activity_if_correctness:activity1:<2",
                         "problems": [
                             {
@@ -108,8 +109,9 @@ angular.module('LessonDemo.services', [])
                         "title": "a3",
                         "type": "quiz",
                         "body": "aaaaaa",
-                        "is_final": true,
+                        "is_final": false,
                         "redoable": false,
+                        "show_summary": true,
                         "problems": [
                             {
                                 "id": "a3p1",
@@ -228,8 +230,9 @@ angular.module('LessonDemo.services', [])
                 var lessonData = MaterialProvider.getMaterial(lessonId);
 
                 USERDATA[lessonId] = {
-                    "is_complete": false,
-                    "activities": {}
+                    is_complete: false,
+                    activities: {},
+                    summary: {}
                 };
                 userdataMap[lessonId] = USERDATA[lessonId];
 

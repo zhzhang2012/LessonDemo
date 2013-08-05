@@ -104,27 +104,46 @@ angular.module('LessonDemo.directives', [])
                 $scope.$on("pauseActivity", function (event) {
                     FSM.back();
                 })
+                //listen to the endOfListen event to end the lesson
+                $scope.$on("endOfLesson", function (event, args) {
+                    if ((typeof args !== "undefined") && (typeof args.summary !== "undefined") &&
+                        (typeof args.summary.correctCount !== "undefined")) {
+                        lessonUserdata.summary.correctCount = args.summary.correctCount;
+                        lessonUserdata.summary.correctPercent = args.summary.correctPercent;
+                    }
+                    //return to the lesson page;
+                    lessonUserdata.current_activity = undefined;
+                    lessonUserdata.is_complete = true;
+                    FSM.back();
+                })
 
                 //iterate all the activities and add listeners
                 angular.forEach(lessonData.activities, function (activity, index) {
 
                     //listen to the complete event sent by an activity module
-                    $scope.$on("activityComplete_" + activity.id, function (event, jump) {
+                    $scope.$on("activityComplete_" + activity.id, function (event, args) {
+                        //update summary if received args
+                        if ((typeof args !== "undefined") && (typeof args.summary !== "undefined") &&
+                            (typeof args.summary.correctCount !== "undefined")) {
+                            lessonUserdata.summary.correctCount = args.summary.correctCount;
+                            lessonUserdata.summary.correctPercent = args.summary.correctPercent;
+                        }
 
+                        //operate jump logic
                         if (index != lessonData.activities.length - 1) {
                             //check if the listener receives jump args
-                            if (typeof jump !== "undefined") {
-                                lessonUserdata.current_activity = jump.activity;
-                                continueLesson(jump.activity);
+                            if ((typeof args !== "undefined") && (typeof args.activity !== "undefined")) {
+                                lessonUserdata.current_activity = args.activity;
+                                continueLesson(args.activity);
                             } else {
                                 lessonUserdata.current_activity = lessonData.activities[index + 1].id;
                                 continueLesson(lessonData.activities[index + 1].id);
                             }
-
                         } else {
                             //return to the lesson page;
                             lessonUserdata.current_activity = undefined;
                             lessonUserdata.is_complete = true;
+                            console.log(lessonUserdata);
                             FSM.back();
                         }
                     })
@@ -153,7 +172,7 @@ angular.module('LessonDemo.directives', [])
             var targetNum = 0;
 
             if (condition.slice(condition.length - 1) === "%") {
-                var correctPercent = (correctCount * 100) / totalCount;
+                var correctPercent = parseInt((correctCount * 100) / totalCount);
                 is_percent = true;
             }
 
@@ -179,9 +198,12 @@ angular.module('LessonDemo.directives', [])
                 if (condition.slice(0, 1) === ">") {
                     return ((is_percent && (correctPercent > targetNum)) ||
                         (!is_percent && (correctCount > targetNum)));
-                } else {
+                } else if (condition.slice(0, 1) === "<") {
                     return ((is_percent && (correctPercent < targetNum)) ||
                         (!is_percent && (correctCount < targetNum)));
+                } else {
+                    return ((is_percent && (correctPercent == targetNum)) ||
+                        (!is_percent && (correctCount == targetNum)));
                 }
             }
         }
@@ -247,13 +269,18 @@ angular.module('LessonDemo.directives', [])
                                         correctCount++;
                                     }
                                 }
-
                                 activityUserdata.summary['correct_count'] = correctCount;
+
+                                //if the activity is final quiz, save the userdata to lessonSummary object
+                                var lessonSummary = {};
+                                if ((typeof activityData.is_final !== "undefined") && (activityData.is_final)) {
+                                    lessonSummary.correctCount = correctCount;
+                                    lessonSummary.correctPercent = parseInt(correctCount * 100 / activityData.problems.length) + "%";
+                                }
                             }
 
                             //check if the activity has a jump attribute and has reached the final problem
                             if (index == activityData.problems.length - 1) {
-                                console.log(activityUserdata);
                                 if (typeof activityData.jump !== "undefined") {
                                     var jump = activityData.jump.split(':');
 
@@ -262,22 +289,22 @@ angular.module('LessonDemo.directives', [])
                                         if (parseJumpCondition(jump[2], correctCount, activityData.problems.length)) {
                                             activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope, {activity: jump[1]});
                                         } else {
-                                            activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope);
+                                            activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope, {summary: lessonSummary});
                                         }
                                     } else if (jump[0] === 'force_to_activity') {
                                         activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope, {activity: jump[1]});
                                     } else {
+                                        if (parseJumpCondition(jump[1], correctCount, activityData.problems.length)) {
+                                            activitySandbox.sendEvent("endOfLesson", $scope, {summary: lessonSummary});
+                                        } else {
+                                            activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope, {summary: lessonSummary});
+                                        }
 
-                                        /* TODO
-                                         * the third type of jump logic
-                                         */
                                     }
-
                                 } else {
                                     //send activity complete event to lesson directive without jump
-                                    activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope);
+                                    activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope, {summary: lessonSummary});
                                 }
-
                             } else {
                                 //do a page transition and show the next problem
                                 PageTransitions.nextPage(24);
