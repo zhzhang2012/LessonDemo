@@ -64,6 +64,7 @@ angular.module('LessonDemo.directives', [])
                 $scope.title = lessonData.title;
                 $scope.summary = lessonData.summary;
                 $scope.activities = lessonData.activities;
+
                 if (typeof lessonUserdata.current_activity === "undefined") {
                     $scope.buttonMsg = "开始学习";
                 } else {
@@ -190,6 +191,7 @@ angular.module('LessonDemo.directives', [])
             link: function ($scope, $element) {
                 var activityData = activitySandbox.getMaterial($routeParams.aid);
                 var activityUserdata = activitySandbox.getUserdata(activityData.id);
+                //activityUserdata['current_problem'] = "cao";
 
                 $scope.title = activityData.title;
                 $scope.body = activityData.body;
@@ -198,7 +200,7 @@ angular.module('LessonDemo.directives', [])
                 if (activityData.type === 'quiz') {
                     var currProblem = 0;
                     for (var i = 0; i < activityData.problems.length; i++) {
-                        if (activityUserdata.current_problem === activityData.problems[i].id) {
+                        if (activityUserdata.current_problem == activityData.problems[i].id) {
                             currProblem = i;
                             break;
                         }
@@ -209,6 +211,11 @@ angular.module('LessonDemo.directives', [])
                 $scope.pauseLearn = function () {
                     //send pause activity event to lesson directive
                     activitySandbox.sendEvent("pauseActivity", $scope);
+                }
+
+                //check if the activity has been previously entered. If yes, reset the activityUserdata
+                if (activityUserdata.is_complete) {
+                    activityUserdata = activitySandbox.resetUserdata("activity", activityData.id);
                 }
 
                 if (activityData.type === "quiz") {
@@ -229,6 +236,10 @@ angular.module('LessonDemo.directives', [])
                                 //destroy the current_problem attribute for later reviewing
                                 activityUserdata.current_problem = undefined;
 
+                                //set the current activity to complete so that if the student goes back to previous
+                                //activity, this activity's userdata can be removed
+                                activityUserdata.is_complete = true;
+
                                 //count the correct answer and update UserdataProvider
                                 var correctCount = 0;
                                 for (var k = 0; k < activityData.problems.length; k++) {
@@ -236,11 +247,13 @@ angular.module('LessonDemo.directives', [])
                                         correctCount++;
                                     }
                                 }
+
                                 activityUserdata.summary['correct_count'] = correctCount;
                             }
 
                             //check if the activity has a jump attribute and has reached the final problem
                             if (index == activityData.problems.length - 1) {
+                                console.log(activityUserdata);
                                 if (typeof activityData.jump !== "undefined") {
                                     var jump = activityData.jump.split(':');
 
@@ -283,11 +296,6 @@ angular.module('LessonDemo.directives', [])
                             var jump = activityData.jump.split(':');
                             if (jump[0] === 'force_to_activity') {
                                 activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope, {activity: jump[1]});
-                            } else {
-
-                                /* TODO
-                                 * the third type of jump logic
-                                 */
                             }
                         } else {
                             //send activity complete event to lesson directive
@@ -346,7 +354,7 @@ angular.module('LessonDemo.directives', [])
                 //when the student complete the problem
                 $scope.submitAnswer = function () {
                     if ($scope.answer !== null) {
-
+                        //problemUserdata = problemSandbox.getUserdata(currProblem.id);
                         //single choice question grader
                         if (currProblem.type === "singlechoice") {
                             if (typeof $scope.answer[currProblem.id] !== "undefined") {
@@ -376,7 +384,10 @@ angular.module('LessonDemo.directives', [])
                                 if ((typeof $scope.answer[currProblem.choices[i].id] !== "undefined") &&
                                     ($scope.answer[currProblem.choices[i].id])) {
                                     problemUserdata.answer.push(currProblem.choices[i].id);
-                                    if (!currProblem.choices[i].is_correct) {
+                                }
+                                if (currProblem.choices[i].is_correct) {
+                                    if ((typeof $scope.answer[currProblem.choices[i].id] === "undefined") ||
+                                        (!$scope.answer[currProblem.choices[i].id])) {
                                         isCorrect = false;
                                     }
                                 }

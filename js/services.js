@@ -236,6 +236,7 @@ angular.module('LessonDemo.services', [])
                 for (var i = 0; i < lessonData.activities.length; i++) {
                     if (lessonData.activities[i].type === 'quiz') {
                         USERDATA[lessonId].activities[lessonData.activities[i].id] = {
+                            is_complete: false,
                             problems: {},
                             summary: {}
                         };
@@ -267,9 +268,38 @@ angular.module('LessonDemo.services', [])
             return userdataMap[moduleId];
         }
 
+        var resetUserdata = function (moduleName, moduleId) {
+            if (moduleName === "Lesson") {
+                this.getLessonUserdata(moduleId);
+            } else if (moduleName === "activity") {
+                var activityData = MaterialProvider.getMaterial(moduleId);
+                userdataMap[moduleId] = {
+                    is_complete: false,
+                    problems: {},
+                    summary: {}
+                };
+                for (var i = 0; i < activityData.problems.length; i++) {
+                    userdataMap[moduleId].problems[activityData.problems[i].id] = {
+                        is_correct: false,
+                        answer: []
+                    }
+                    userdataMap[activityData.problems[i].id] = userdataMap[moduleId].
+                        problems[activityData.problems[i].id];
+                }
+                return userdataMap[moduleId];
+            } else {
+                userdataMap[moduleId] = {
+                    is_correct: false,
+                    answer: []
+                }
+                return userdataMap[moduleId];
+            }
+        }
+
         return{
             getLessonUserdata: getLessonUserdata,
-            getUserdata: getUserdata
+            getUserdata: getUserdata,
+            resetUserdata: resetUserdata
         }
 
     })
@@ -299,6 +329,10 @@ angular.module('LessonDemo.services', [])
 
             Sandbox.prototype.getUserdata = function (moduleId) {
                 return UserdataProvider.getUserdata(moduleId);
+            }
+
+            Sandbox.prototype.resetUserdata = function (moduleName, moduleId) {
+                return UserdataProvider.resetUserdata(moduleName, moduleId);
             }
 
             Sandbox.prototype.sendEvent = function (eventName, scope, args) {
