@@ -280,6 +280,8 @@ angular.module('LessonDemo.services', [])
                         "type": "quiz",
                         "is_final": true,
                         "pool_count": 5,
+                        "randomize_choices": true,
+                        "randomize_problems": true,
                         "show_answer": false,
                         "show_summary": true,
                         "redoable": false,
@@ -476,12 +478,23 @@ angular.module('LessonDemo.services', [])
         ];
 
         var materialMap = {};
-        materialMap['lesson1'] = Material;
         for (var i = 0; i < Material.length; i++) {
-            materialMap[Material[i].id] = Material[i];
             for (var j = 0; j < Material[i].activities.length; j++) {
+                //if randomize problems, shuffle all the problems in all activities
+                if ((typeof Material[i].activities[j].randomize_problems != "undefined") &&
+                    (Material[i].activities[j].randomize_problems)) {
+                    Material[i].activities[j].problems = _.shuffle(Material[i].activities[j].problems);
+                }
+                //if randomize choices, shuffle all the choices in all problems
+                if ((typeof Material[i].activities[j].randomize_choices != "undefined") &&
+                    (Material[i].activities[j].randomize_choices)) {
+                    for (var k = 0; k < Material[i].activities[j].problems[k].choices.length; k++) {
+                        Material[i].activities[j].problems[k].choices = _.shuffle(Material[i].activities[j].problems[k].choices);
+                    }
+                }
                 materialMap[Material[i].activities[j].id] = Material[i].activities[j];
             }
+            materialMap[Material[i].id] = Material[i];
         }
 
         var getMaterial = function (moduleId) {
