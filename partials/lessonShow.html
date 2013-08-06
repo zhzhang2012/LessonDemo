@@ -6,10 +6,15 @@
                 <span>lecture标题： {{title}}</span><br>
                 <span>lecture内容：{{body}}</span>
             </div>
-            <div switch>
+            <div switch ng-hide="showQuizSummary">
                 <problem id="{{ problem.id }}" class="pt-page pt-page-{{ $index+1 }}" ng-repeat='problem in problems'
                          ng-model="problemShow"
                          activity=true></problem>
+            </div>
+            <div ng-show="showQuizSummary">
+                <span>总共答对&nbsp;{{ quizCorrectCount }}&nbsp;题，正确率&nbsp; {{ quizCorrectPercent }}&nbsp;</span>
+                <button class="pt-touch-button pt-triggers" style="top:300px" ng-click="nextActivity()">继&nbsp;续
+                </button>
             </div>
 
         </div>

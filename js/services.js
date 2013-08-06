@@ -17,6 +17,7 @@ angular.module('LessonDemo.services', [])
                 "activities": [
                     {
                         "id": "activity1",
+                        "parent_id": "lesson1",
                         "title": "a1",
                         "type": "lecture",
                         "body": "aaaaaaaaaaaaaaaaaaaaaa",
@@ -25,6 +26,7 @@ angular.module('LessonDemo.services', [])
                     },
                     {
                         "id": "activity2",
+                        "parent_id": "lesson1",
                         "title": "a2",
                         "type": "quiz",
                         "body": "aaaaaa",
@@ -106,6 +108,7 @@ angular.module('LessonDemo.services', [])
                     },
                     {
                         "id": "activity3",
+                        "parent_id": "lesson1",
                         "title": "a3",
                         "type": "quiz",
                         "body": "aaaaaa",
@@ -272,15 +275,17 @@ angular.module('LessonDemo.services', [])
         }
 
         var resetUserdata = function (moduleName, moduleId) {
-            if (moduleName === "Lesson") {
+            if (moduleName === "lesson") {
                 this.getLessonUserdata(moduleId);
             } else if (moduleName === "activity") {
                 var activityData = MaterialProvider.getMaterial(moduleId);
                 userdataMap[moduleId] = {
-                    is_complete: false,
+                    is_complete: true,
                     problems: {},
                     summary: {}
                 };
+                userdataMap[activityData.parent_id].activities[moduleId] = userdataMap[moduleId];
+
                 for (var i = 0; i < activityData.problems.length; i++) {
                     userdataMap[moduleId].problems[activityData.problems[i].id] = {
                         is_correct: false,
@@ -359,7 +364,108 @@ angular.module('LessonDemo.services', [])
                 return MaterialProvider.getMaterial(parentId);
             }
 
-        };
+            //all jump logic for a quiz activity
+            Sandbox.prototype.completeQuizActivity = function (activityData, $scope, lessonSummary) {
+
+                var parseJumpCondition = function (condition, correctCount, totalCount) {
+                    var is_percent = false;
+                    var targetNum = 0;
+
+                    if (condition.slice(condition.length - 1) === "%") {
+                        var correctPercent = parseInt((correctCount * 100) / totalCount);
+                        is_percent = true;
+                    }
+
+                    if (condition.slice(1, 2) === "=") {
+                        if (is_percent) {
+                            targetNum = condition.slice(2, condition.length - 1);
+                        } else {
+                            targetNum = condition.slice(2);
+                        }
+                        if (condition.slice(0, 1) === ">") {
+                            return ((is_percent && (correctPercent >= targetNum)) ||
+                                (!is_percent && (correctCount >= targetNum)));
+                        } else {
+                            return ((is_percent && (correctPercent <= targetNum)) ||
+                                (!is_percent && (correctCount <= targetNum)));
+                        }
+                    } else {
+                        if (is_percent) {
+                            targetNum = condition.slice(1, condition.length - 1);
+                        } else {
+                            targetNum = condition.slice(1);
+                        }
+                        if (condition.slice(0, 1) === ">") {
+                            return ((is_percent && (correctPercent > targetNum)) ||
+                                (!is_percent && (correctCount > targetNum)));
+                        } else if (condition.slice(0, 1) === "<") {
+                            return ((is_percent && (correctPercent < targetNum)) ||
+                                (!is_percent && (correctCount < targetNum)));
+                        } else {
+                            return ((is_percent && (correctPercent == targetNum)) ||
+                                (!is_percent && (correctCount == targetNum)));
+                        }
+                    }
+                }
+
+                if (typeof activityData.jump !== "undefined") {
+                    var jump = activityData.jump.split(':');
+                    //split the third parameter and apply the jump logic
+                    if (jump[0] === 'to_activity_if_correctness') {
+                        if (parseJumpCondition(jump[2], lessonSummary.correctCount, activityData.problems.length)) {
+                            this.sendEvent("activityComplete_" + activityData.id, $scope, {activity: jump[1]});
+                        } else {
+                            this.sendEvent("activityComplete_" + activityData.id, $scope, {summary: lessonSummary});
+                        }
+                    } else if (jump[0] === 'force_to_activity') {
+                        this.sendEvent("activityComplete_" + activityData.id, $scope, {activity: jump[1]});
+                    } else {
+                        if (parseJumpCondition(jump[1], lessonSummary.correctCount, activityData.problems.length)) {
+                            this.sendEvent("endOfLesson", $scope, {summary: lessonSummary});
+                        } else {
+                            this.sendEvent("activityComplete_" + activityData.id, $scope, {summary: lessonSummary});
+                        }
+                    }
+                } else {
+                    //send activity complete event to lesson directive without jump
+                    this.sendEvent("activityComplete_" + activityData.id, $scope, {summary: lessonSummary});
+                }
+            }
+
+            //grader for three types of questions
+            Sandbox.prototype.problemGrader = function (currProblem, userAnswer) {
+                if (currProblem.type === "singlechoice") {
+                    if (typeof userAnswer[currProblem.id] !== "undefined") {
+                        for (var i = 0; i < currProblem.choices.length; i++) {
+                            if (userAnswer[currProblem.id] === currProblem.choices[i].id) {
+                                break;
+                            }
+                        }
+                        return (currProblem.choices[i].is_correct);
+                    }
+
+                    //single filling question grader
+                } else if (currProblem.type === "singlefilling") {
+                    return ((typeof userAnswer[currProblem.id] !== "undefined") &&
+                        (userAnswer[currProblem.id] === currProblem.correct_answer));
+
+                    //multi-choice question grader
+                } else {
+                    var isCorrect = true;
+                    for (var i = 0; i < currProblem.choices.length; i++) {
+                        if (currProblem.choices[i].is_correct) {
+                            if ((typeof userAnswer[currProblem.choices[i].id] === "undefined") ||
+                                (!userAnswer[currProblem.choices[i].id])) {
+                                isCorrect = false;
+                                break;
+                            }
+                        }
+                    }
+                    return isCorrect;
+                }
+            }
+
+        }
 
         var getSandbox = function () {
             return new Sandbox();

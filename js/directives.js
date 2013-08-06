@@ -64,7 +64,6 @@ angular.module('LessonDemo.directives', [])
                 $scope.title = lessonData.title;
                 $scope.summary = lessonData.summary;
                 $scope.activities = lessonData.activities;
-
                 if (typeof lessonUserdata.current_activity === "undefined") {
                     $scope.buttonMsg = "开始学习";
                 } else {
@@ -95,7 +94,7 @@ angular.module('LessonDemo.directives', [])
                     }
                 }
                 $scope.reviewActivity = function (activityId) {
-                    if (typeof lessonUserdata.activities[activityId].current_problem !== 'undefined') {
+                    if (typeof lessonUserdata.activities[activityId].current_problem !== "undefined") {
                         lessonUserdata.activities[activityId].current_problem = undefined;
                     }
                     FSM.resume(activityId);
@@ -167,53 +166,11 @@ angular.module('LessonDemo.directives', [])
         //create the activity sandbox
         var activitySandbox = SandboxProvider.getSandbox();
 
-        var parseJumpCondition = function (condition, correctCount, totalCount) {
-            var is_percent = false;
-            var targetNum = 0;
-
-            if (condition.slice(condition.length - 1) === "%") {
-                var correctPercent = parseInt((correctCount * 100) / totalCount);
-                is_percent = true;
-            }
-
-            if (condition.slice(1, 2) === "=") {
-                if (is_percent) {
-                    targetNum = condition.slice(2, condition.length - 1);
-                } else {
-                    targetNum = condition.slice(2);
-                }
-                if (condition.slice(0, 1) === ">") {
-                    return ((is_percent && (correctPercent >= targetNum)) ||
-                        (!is_percent && (correctCount >= targetNum)));
-                } else {
-                    return ((is_percent && (correctPercent <= targetNum)) ||
-                        (!is_percent && (correctCount <= targetNum)));
-                }
-            } else {
-                if (is_percent) {
-                    targetNum = condition.slice(1, condition.length - 1);
-                } else {
-                    targetNum = condition.slice(1);
-                }
-                if (condition.slice(0, 1) === ">") {
-                    return ((is_percent && (correctPercent > targetNum)) ||
-                        (!is_percent && (correctCount > targetNum)));
-                } else if (condition.slice(0, 1) === "<") {
-                    return ((is_percent && (correctPercent < targetNum)) ||
-                        (!is_percent && (correctCount < targetNum)));
-                } else {
-                    return ((is_percent && (correctPercent == targetNum)) ||
-                        (!is_percent && (correctCount == targetNum)));
-                }
-            }
-        }
-
         return {
             restrict: "E",
             link: function ($scope, $element) {
                 var activityData = activitySandbox.getMaterial($routeParams.aid);
                 var activityUserdata = activitySandbox.getUserdata(activityData.id);
-                //activityUserdata['current_problem'] = "cao";
 
                 $scope.title = activityData.title;
                 $scope.body = activityData.body;
@@ -222,7 +179,8 @@ angular.module('LessonDemo.directives', [])
                 if (activityData.type === 'quiz') {
                     var currProblem = 0;
                     for (var i = 0; i < activityData.problems.length; i++) {
-                        if (activityUserdata.current_problem == activityData.problems[i].id) {
+                        if ((activityUserdata.current_problem != "undefined") &&
+                            (activityUserdata.current_problem == activityData.problems[i].id)) {
                             currProblem = i;
                             break;
                         }
@@ -236,8 +194,9 @@ angular.module('LessonDemo.directives', [])
                 }
 
                 //check if the activity has been previously entered. If yes, reset the activityUserdata
-                if (activityUserdata.is_complete) {
+                if ((typeof activityUserdata.is_complete != "undefined") && (activityUserdata.is_complete)) {
                     activityUserdata = activitySandbox.resetUserdata("activity", activityData.id);
+                    console.log(activityUserdata);
                 }
 
                 if (activityData.type === "quiz") {
@@ -257,7 +216,6 @@ angular.module('LessonDemo.directives', [])
                             } else {
                                 //destroy the current_problem attribute for later reviewing
                                 activityUserdata.current_problem = undefined;
-
                                 //set the current activity to complete so that if the student goes back to previous
                                 //activity, this activity's userdata can be removed
                                 activityUserdata.is_complete = true;
@@ -270,7 +228,6 @@ angular.module('LessonDemo.directives', [])
                                     }
                                 }
                                 activityUserdata.summary['correct_count'] = correctCount;
-
                                 //if the activity is final quiz, save the userdata to lessonSummary object
                                 var lessonSummary = {};
                                 if ((typeof activityData.is_final !== "undefined") && (activityData.is_final)) {
@@ -281,29 +238,20 @@ angular.module('LessonDemo.directives', [])
 
                             //check if the activity has a jump attribute and has reached the final problem
                             if (index == activityData.problems.length - 1) {
-                                if (typeof activityData.jump !== "undefined") {
-                                    var jump = activityData.jump.split(':');
+                                //check if the activity need show the quiz result
+                                if ((typeof activityData.show_summary == "undefined") || (!activityData.show_summary) ||
+                                    ((activityData.show_summary) && ($scope.showQuizSummary))) {
 
-                                    //split the third parameter and apply the jump logic
-                                    if (jump[0] === 'to_activity_if_correctness') {
-                                        if (parseJumpCondition(jump[2], correctCount, activityData.problems.length)) {
-                                            activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope, {activity: jump[1]});
-                                        } else {
-                                            activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope, {summary: lessonSummary});
-                                        }
-                                    } else if (jump[0] === 'force_to_activity') {
-                                        activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope, {activity: jump[1]});
-                                    } else {
-                                        if (parseJumpCondition(jump[1], correctCount, activityData.problems.length)) {
-                                            activitySandbox.sendEvent("endOfLesson", $scope, {summary: lessonSummary});
-                                        } else {
-                                            activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope, {summary: lessonSummary});
-                                        }
+                                    activitySandbox.completeQuizActivity(activityData, $scope, lessonSummary);
 
+                                } else if ((typeof activityData.show_summary != "undefined") && (activityData.show_summary)) {
+                                    $scope.showQuizSummary = true;
+                                    $scope.hideContinueButton = true;
+                                    $scope.quizCorrectCount = correctCount;
+                                    $scope.quizCorrectPercent = parseInt(correctCount * 100 / activityData.problems.length) + "%";
+                                    $scope.nextActivity = function () {
+                                        activitySandbox.completeQuizActivity(activityData, $scope, lessonSummary);
                                     }
-                                } else {
-                                    //send activity complete event to lesson directive without jump
-                                    activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope, {summary: lessonSummary});
                                 }
                             } else {
                                 //do a page transition and show the next problem
@@ -381,46 +329,20 @@ angular.module('LessonDemo.directives', [])
                 //when the student complete the problem
                 $scope.submitAnswer = function () {
                     if ($scope.answer !== null) {
-                        //problemUserdata = problemSandbox.getUserdata(currProblem.id);
-                        //single choice question grader
-                        if (currProblem.type === "singlechoice") {
-                            if (typeof $scope.answer[currProblem.id] !== "undefined") {
-                                for (var i = 0; i < currProblem.choices.length; i++) {
-                                    if ($scope.answer[currProblem.id] === currProblem.choices[i].id) {
-                                        break;
-                                    }
-                                }
-                                if (currProblem.choices[i].is_correct) {
-                                    problemUserdata.is_correct = true;
-                                }
-                                problemUserdata.answer.push($scope.answer[currProblem.id]);
-                            }
-
-                            //single filling question grader
-                        } else if (currProblem.type === "singlefilling") {
-                            if ((typeof $scope.answer[currProblem.id] !== "undefined") &&
-                                ($scope.answer[currProblem.id] === currProblem.correct_answer)) {
-                                problemUserdata.is_correct = true;
-                            }
-                            problemUserdata.answer.push($scope.answer[currProblem.id]);
-
-                            //multi-choice question grader
-                        } else {
-                            var isCorrect = true;
+                        //multi-choice question grader
+                        if (currProblem.type === "multichoice") {
+                            problemUserdata.is_correct = problemSandbox.problemGrader(currProblem, $scope.answer);
                             for (var i = 0; i < currProblem.choices.length; i++) {
                                 if ((typeof $scope.answer[currProblem.choices[i].id] !== "undefined") &&
                                     ($scope.answer[currProblem.choices[i].id])) {
                                     problemUserdata.answer.push(currProblem.choices[i].id);
                                 }
-                                if (currProblem.choices[i].is_correct) {
-                                    if ((typeof $scope.answer[currProblem.choices[i].id] === "undefined") ||
-                                        (!$scope.answer[currProblem.choices[i].id])) {
-                                        isCorrect = false;
-                                    }
-                                }
                             }
-                            if (isCorrect) {
-                                problemUserdata.is_correct = true;
+                            //single choice & single filling questions grader
+                        } else {
+                            if (typeof $scope.answer[currProblem.id] !== "undefined") {
+                                problemUserdata.is_correct = problemSandbox.problemGrader(currProblem, $scope.answer);
+                                problemUserdata.answer.push($scope.answer[currProblem.id]);
                             }
                         }
                     }
