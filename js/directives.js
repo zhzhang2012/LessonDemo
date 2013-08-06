@@ -97,11 +97,30 @@ angular.module('LessonDemo.directives', [])
                     if (typeof lessonUserdata.activities[activityId].current_problem !== "undefined") {
                         lessonUserdata.activities[activityId].current_problem = undefined;
                     }
+                    lessonUserdata.current_activity = activityId;
                     FSM.resume(activityId);
                 }
                 //listen to the pause activity request sent by an activity module
                 $scope.$on("pauseActivity", function (event) {
                     FSM.back();
+                })
+                //listen to the updating-current_problem-event if show_summary attribute is true
+                $scope.$on("showSummaryBeforeContinue", function (event) {
+                    for (var i = 0; i < lessonData.activities.length; i++) {
+                        if (lessonUserdata.current_activity == lessonData.activities[i].id) {
+                            break;
+                        }
+                    }
+                    if (i != lessonData.activities.length - 1) {
+                        lessonUserdata.current_activity = lessonData.activities[i + 1].id;
+                    } else {
+                        lessonUserdata.current_activity = undefined;
+                        //TODO: badges decide the condition
+                        if ((typeof lessonUserdata.summary.correctPercent != "undefined") &&
+                            (lessonUserdata.summary.correctPercent > 70)) {
+                            lessonUserdata.is_complete = true;
+                        }
+                    }
                 })
                 //listen to the endOfListen event to end the lesson
                 $scope.$on("endOfLesson", function (event, args) {
@@ -112,7 +131,11 @@ angular.module('LessonDemo.directives', [])
                     }
                     //return to the lesson page;
                     lessonUserdata.current_activity = undefined;
-                    lessonUserdata.is_complete = true;
+                    //TODO: badges decide the condition
+                    if ((typeof lessonUserdata.summary.correctPercent != "undefined") &&
+                        (lessonUserdata.summary.correctPercent > 70)) {
+                        lessonUserdata.is_complete = true;
+                    }
                     FSM.back();
                 })
 
@@ -141,7 +164,11 @@ angular.module('LessonDemo.directives', [])
                         } else {
                             //return to the lesson page;
                             lessonUserdata.current_activity = undefined;
-                            lessonUserdata.is_complete = true;
+                            //TODO: badges decide the condition
+                            if ((typeof lessonUserdata.summary.correctPercent != "undefined") &&
+                                (lessonUserdata.summary.correctPercent > 70)) {
+                                lessonUserdata.is_complete = true;
+                            }
                             console.log(lessonUserdata);
                             FSM.back();
                         }
@@ -196,7 +223,6 @@ angular.module('LessonDemo.directives', [])
                 //check if the activity has been previously entered. If yes, reset the activityUserdata
                 if ((typeof activityUserdata.is_complete != "undefined") && (activityUserdata.is_complete)) {
                     activityUserdata = activitySandbox.resetUserdata("activity", activityData.id);
-                    console.log(activityUserdata);
                 }
 
                 if (activityData.type === "quiz") {
@@ -232,7 +258,7 @@ angular.module('LessonDemo.directives', [])
                                 var lessonSummary = {};
                                 if ((typeof activityData.is_final !== "undefined") && (activityData.is_final)) {
                                     lessonSummary.correctCount = correctCount;
-                                    lessonSummary.correctPercent = parseInt(correctCount * 100 / activityData.problems.length) + "%";
+                                    lessonSummary.correctPercent = parseInt(correctCount * 100 / activityData.problems.length);
                                 }
                             }
 
@@ -252,6 +278,8 @@ angular.module('LessonDemo.directives', [])
                                     $scope.nextActivity = function () {
                                         activitySandbox.completeQuizActivity(activityData, $scope, lessonSummary);
                                     }
+                                    //tell the lesson module to update the current_activity attribute
+                                    activitySandbox.sendEvent("showSummaryBeforeContinue", $scope);
                                 }
                             } else {
                                 //do a page transition and show the next problem

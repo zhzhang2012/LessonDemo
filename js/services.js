@@ -34,6 +34,7 @@ angular.module('LessonDemo.services', [])
                         "randomize_problems": true,
                         "randomize_choices": true,
                         "show_answer": true,
+                        "show_summary": true,
                         //"jump": "end_of_lesson_if_correctness:=3",
                         "jump": "to_activity_if_correctness:activity1:<2",
                         "problems": [
