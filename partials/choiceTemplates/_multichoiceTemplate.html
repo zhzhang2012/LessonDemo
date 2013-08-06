@@ -1,6 +1,7 @@
 <div id='problem{{$index}}'>
-    <div ng-hide='showExplanation'>
-        <span>题目名称：{{problem.title}}</span><br>
+    <div>
+        <span>题目：{{ problem.title }}</span><br>
+        <span>题干：{{ problem.body }}</span>
         <button ng-show="showHintButton" ng-click="showHint()">显示暗示</button>
         <span ng-show="showHintBox">{{ hint }}</span>
 
@@ -10,7 +11,10 @@
                     ng-model='$parent.answer[choice.id]'>{{choice.body}}</label>
         </div>
     </div>
+    <p>
+
     <div ng-show='showExplanation'>解析：{{ explanation }}</div>
+    </p>
     <button ng-hide='hideSubmitButton' class='pt-touch-button pt-triggers' style='position:absolute;top:300px'
             ng-click='submitAnswer()'>提&nbsp;交
     </button>

@@ -220,6 +220,11 @@ angular.module('LessonDemo.directives', [])
                     activitySandbox.sendEvent("pauseActivity", $scope);
                 }
 
+                /*$scope.$on("showAnswerBeforeContinue", function(event){
+                 for(var i=0;i<a)
+                 if(activityUserdata.current_problem != activityData.problems);
+                 });*/
+
                 //check if the activity has been previously entered. If yes, reset the activityUserdata
                 if ((typeof activityUserdata.is_complete != "undefined") && (activityUserdata.is_complete)) {
                     activityUserdata = activitySandbox.resetUserdata("activity", activityData.id);
@@ -268,7 +273,7 @@ angular.module('LessonDemo.directives', [])
                                 if ((typeof activityData.show_summary == "undefined") || (!activityData.show_summary) ||
                                     ((activityData.show_summary) && ($scope.showQuizSummary))) {
 
-                                    activitySandbox.completeQuizActivity(activityData, $scope, lessonSummary);
+                                    activitySandbox.completeQuizActivity(activityData, $scope, correctCount, lessonSummary);
 
                                 } else if ((typeof activityData.show_summary != "undefined") && (activityData.show_summary)) {
                                     $scope.showQuizSummary = true;
@@ -276,7 +281,7 @@ angular.module('LessonDemo.directives', [])
                                     $scope.quizCorrectCount = correctCount;
                                     $scope.quizCorrectPercent = parseInt(correctCount * 100 / activityData.problems.length) + "%";
                                     $scope.nextActivity = function () {
-                                        activitySandbox.completeQuizActivity(activityData, $scope, lessonSummary);
+                                        activitySandbox.completeQuizActivity(activityData, $scope, correctCount, lessonSummary);
                                     }
                                     //tell the lesson module to update the current_activity attribute
                                     activitySandbox.sendEvent("showSummaryBeforeContinue", $scope);
@@ -379,6 +384,8 @@ angular.module('LessonDemo.directives', [])
                         $scope.showExplanation = true;
                         $scope.hideSubmitButton = true;
                         $scope.showContinueButton = true;
+
+                        //problemSandbox.sendEvent("showAnswerBeforeContinue", $scope);
                     } else {
                         //send problem complete event to activity directive
                         problemSandbox.sendEvent('problemComplete_' + currProblem.id, $scope);

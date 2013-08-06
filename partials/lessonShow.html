@@ -4,7 +4,7 @@
         <div id="pt-main" class="pt-perspective">
             <div ng-show="lecture" style="background-color: #a0a0a0">
                 <span>lecture标题： {{title}}</span><br>
-                <span>lecture内容：{{body}}</span>
+                <span ng-bind-html-unsafe="body"></span>
             </div>
             <div switch ng-hide="showQuizSummary">
                 <problem id="{{ problem.id }}" class="pt-page pt-page-{{ $index+1 }}" ng-repeat='problem in problems'
