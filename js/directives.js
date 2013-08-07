@@ -117,7 +117,11 @@ angular.module('LessonDemo.directives', [])
                     if ((typeof lessonUserdata.summary.correctPercent != "undefined") &&
                         (lessonUserdata.summary.correctPercent > 70)) {
                         lessonUserdata.is_complete = true;
+                    } else if ((typeof lessonUserdata.summary.correctPercent == "undefined")) {
+                        lessonUserdata.summary.correctPercent = 100;
+                        lessonUserdata.is_complete = true;
                     }
+
                     if (args.should_transition) {
                         FSM.back();
                     }
@@ -155,6 +159,9 @@ angular.module('LessonDemo.directives', [])
                             //TODO: badges decide the condition
                             if ((typeof lessonUserdata.summary.correctPercent != "undefined") &&
                                 (lessonUserdata.summary.correctPercent > 70)) {
+                                lessonUserdata.is_complete = true;
+                            } else if ((typeof lessonUserdata.summary.correctPercent == "undefined")) {
+                                lessonUserdata.summary.correctPercent = 100;
                                 lessonUserdata.is_complete = true;
                             }
                             console.log(lessonUserdata);
