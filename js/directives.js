@@ -195,12 +195,12 @@ angular.module('LessonDemo.directives', [])
             link: function ($scope, $element) {
                 var activityData = activitySandbox.getMaterial($routeParams.aid);
                 var activityUserdata = activitySandbox.getUserdata(activityData.id);
-                if ((typeof activityData.pool_count != "undefined") &&
-                    (activityData.pool_count <= activityData.problems.length)) {
-                    $scope.problems = activityData.problems.slice(0, activityData.pool_count);
-                } else {
-                    $scope.problems = activityData.problems;
-                }
+                /*if ((typeof activityData.pool_count != "undefined") &&
+                 (activityData.pool_count <= activityData.problems.length)) {
+                 $scope.problems = activityData.problems.slice(0, activityData.pool_count);
+                 } else {
+                 $scope.problems = activityData.problems;
+                 }*/
 
                 $scope.title = activityData.title;
                 $scope.body = activityData.body;
@@ -289,6 +289,12 @@ angular.module('LessonDemo.directives', [])
                                 } else {
                                     //do a page transition and show the next problem
                                     PageTransitions.nextPage(24);
+                                }
+                            } else {
+                                //if the activity both shows snawers and shows summary, apply the same logic of the
+                                // summary "back" button to the last problem's back button after showing explanations
+                                if (index == activityData.problems.length - 1) {
+                                    activitySandbox.completeQuizActivity(activityData, $scope, correctCount, lessonSummary);
                                 }
                             }
                         });

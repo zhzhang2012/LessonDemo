@@ -156,7 +156,6 @@ angular.module('LessonDemo.services', [])
                         "parent_id": "lesson1",
                         "title": "走一步，再走一步-字词测试第二部分",
                         "type": "quiz",
-                        "show_answer": true,
                         "show_summary": true,
                         "redoable": true,
                         "jump": [
