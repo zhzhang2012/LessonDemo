@@ -104,24 +104,6 @@ angular.module('LessonDemo.directives', [])
                 $scope.$on("pauseActivity", function (event) {
                     FSM.back();
                 })
-                //listen to the updating-current_problem-event if show_summary attribute is true
-                $scope.$on("showSummaryBeforeContinue", function (event) {
-                    for (var i = 0; i < lessonData.activities.length; i++) {
-                        if (lessonUserdata.current_activity == lessonData.activities[i].id) {
-                            break;
-                        }
-                    }
-                    if (i != lessonData.activities.length - 1) {
-                        lessonUserdata.current_activity = lessonData.activities[i + 1].id;
-                    } else {
-                        lessonUserdata.current_activity = undefined;
-                        //TODO: badges decide the condition
-                        if ((typeof lessonUserdata.summary.correctPercent != "undefined") &&
-                            (lessonUserdata.summary.correctPercent > 70)) {
-                            lessonUserdata.is_complete = true;
-                        }
-                    }
-                })
                 //listen to the endOfListen event to end the lesson
                 $scope.$on("endOfLesson", function (event, args) {
                     if ((typeof args !== "undefined") && (typeof args.summary !== "undefined") &&
@@ -136,7 +118,9 @@ angular.module('LessonDemo.directives', [])
                         (lessonUserdata.summary.correctPercent > 70)) {
                         lessonUserdata.is_complete = true;
                     }
-                    FSM.back();
+                    if (args.should_transition) {
+                        FSM.back();
+                    }
                 })
 
                 //iterate all the activities and add listeners
@@ -156,10 +140,14 @@ angular.module('LessonDemo.directives', [])
                             //check if the listener receives jump args
                             if ((typeof args !== "undefined") && (typeof args.activity !== "undefined")) {
                                 lessonUserdata.current_activity = args.activity;
-                                continueLesson(args.activity);
+                                if (args.should_transition) {
+                                    continueLesson(args.activity);
+                                }
                             } else {
                                 lessonUserdata.current_activity = lessonData.activities[index + 1].id;
-                                continueLesson(lessonData.activities[index + 1].id);
+                                if (args.should_transition) {
+                                    continueLesson(lessonData.activities[index + 1].id);
+                                }
                             }
                         } else {
                             //return to the lesson page;
@@ -170,7 +158,9 @@ angular.module('LessonDemo.directives', [])
                                 lessonUserdata.is_complete = true;
                             }
                             console.log(lessonUserdata);
-                            FSM.back();
+                            if (args.should_transition) {
+                                FSM.back();
+                            }
                         }
                     })
                 })
@@ -198,6 +188,12 @@ angular.module('LessonDemo.directives', [])
             link: function ($scope, $element) {
                 var activityData = activitySandbox.getMaterial($routeParams.aid);
                 var activityUserdata = activitySandbox.getUserdata(activityData.id);
+                if ((typeof activityData.pool_count != "undefined") &&
+                    (activityData.pool_count <= activityData.problems.length)) {
+                    $scope.problems = activityData.problems.slice(0, activityData.pool_count);
+                } else {
+                    $scope.problems = activityData.problems;
+                }
 
                 $scope.title = activityData.title;
                 $scope.body = activityData.body;
@@ -212,18 +208,13 @@ angular.module('LessonDemo.directives', [])
                             break;
                         }
                     }
-                    $scope.problems = activityData.problems.slice(currProblem);
+                    $scope.problems = $scope.problems.slice(currProblem);
                 }
 
                 $scope.pauseLearn = function () {
                     //send pause activity event to lesson directive
                     activitySandbox.sendEvent("pauseActivity", $scope);
                 }
-
-                /*$scope.$on("showAnswerBeforeContinue", function(event){
-                 for(var i=0;i<a)
-                 if(activityUserdata.current_problem != activityData.problems);
-                 });*/
 
                 //check if the activity has been previously entered. If yes, reset the activityUserdata
                 if ((typeof activityUserdata.is_complete != "undefined") && (activityUserdata.is_complete)) {
@@ -240,7 +231,7 @@ angular.module('LessonDemo.directives', [])
                     angular.forEach(activityData.problems, function (problem, index) {
 
                         //listen to the complete event sent by a problem
-                        $scope.$on("problemComplete_" + problem.id, function (event) {
+                        $scope.$on("problemComplete_" + problem.id, function (event, args) {
                             //some userdata logic
                             if (index != activityData.problems.length - 1) {
                                 activityUserdata.current_problem = activityData.problems[index + 1].id;
@@ -267,28 +258,31 @@ angular.module('LessonDemo.directives', [])
                                 }
                             }
 
-                            //check if the activity has a jump attribute and has reached the final problem
-                            if (index == activityData.problems.length - 1) {
-                                //check if the activity need show the quiz result
-                                if ((typeof activityData.show_summary == "undefined") || (!activityData.show_summary) ||
-                                    ((activityData.show_summary) && ($scope.showQuizSummary))) {
+                            if (args.should_transition) {
+                                //check if the activity has a jump attribute and has reached the final problem
+                                if (index == activityData.problems.length - 1) {
+                                    //check if the activity need show the quiz result
+                                    if ((typeof activityData.show_summary == "undefined") || (!activityData.show_summary) ||
+                                        ((activityData.show_summary) && ($scope.showQuizSummary))) {
 
-                                    activitySandbox.completeQuizActivity(activityData, $scope, correctCount, lessonSummary);
-
-                                } else if ((typeof activityData.show_summary != "undefined") && (activityData.show_summary)) {
-                                    $scope.showQuizSummary = true;
-                                    $scope.hideContinueButton = true;
-                                    $scope.quizCorrectCount = correctCount;
-                                    $scope.quizCorrectPercent = parseInt(correctCount * 100 / activityData.problems.length) + "%";
-                                    $scope.nextActivity = function () {
                                         activitySandbox.completeQuizActivity(activityData, $scope, correctCount, lessonSummary);
+
+                                    } else if ((typeof activityData.show_summary != "undefined") && (activityData.show_summary)) {
+                                        //tell the lesson module to update the current_activity attribute
+                                        activitySandbox.completeQuizActivity(activityData, $scope, correctCount, lessonSummary);
+
+                                        $scope.showQuizSummary = true;
+                                        $scope.hideContinueButton = true;
+                                        $scope.quizCorrectCount = correctCount;
+                                        $scope.quizCorrectPercent = parseInt(correctCount * 100 / activityData.problems.length) + "%";
+                                        $scope.nextActivity = function () {
+                                            activitySandbox.completeQuizActivity(activityData, $scope, correctCount, lessonSummary);
+                                        }
                                     }
-                                    //tell the lesson module to update the current_activity attribute
-                                    activitySandbox.sendEvent("showSummaryBeforeContinue", $scope);
+                                } else {
+                                    //do a page transition and show the next problem
+                                    PageTransitions.nextPage(24);
                                 }
-                            } else {
-                                //do a page transition and show the next problem
-                                PageTransitions.nextPage(24);
                             }
                         });
                     })
@@ -303,11 +297,11 @@ angular.module('LessonDemo.directives', [])
                         if (typeof activityData.jump !== "undefined") {
                             var jump = activityData.jump.split(':');
                             if (jump[0] === 'force_to_activity') {
-                                activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope, {activity: jump[1]});
+                                activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope, {activity: jump[1], should_transition: true});
                             }
                         } else {
                             //send activity complete event to lesson directive
-                            activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope);
+                            activitySandbox.sendEvent("activityComplete_" + activityData.id, $scope, {should_transition: true});
                         }
                     }
                 }
@@ -386,16 +380,17 @@ angular.module('LessonDemo.directives', [])
                         $scope.showContinueButton = true;
 
                         //problemSandbox.sendEvent("showAnswerBeforeContinue", $scope);
+                        problemSandbox.sendEvent('problemComplete_' + currProblem.id, $scope, {should_transition: false});
                     } else {
                         //send problem complete event to activity directive
-                        problemSandbox.sendEvent('problemComplete_' + currProblem.id, $scope);
+                        problemSandbox.sendEvent('problemComplete_' + currProblem.id, $scope, {should_transition: true});
                     }
                 }
 
                 //continue button if show_answer=true
                 $scope.continueProblem = function () {
                     //send problem complete event to activity directive
-                    problemSandbox.sendEvent('problemComplete_' + currProblem.id, $scope);
+                    problemSandbox.sendEvent('problemComplete_' + currProblem.id, $scope, {should_transition: true});
                 }
             }
         }

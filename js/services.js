@@ -157,6 +157,7 @@ angular.module('LessonDemo.services', [])
                         "title": "走一步，再走一步-字词测试第二部分",
                         "type": "quiz",
                         "show_answer": true,
+                        "show_summary": true,
                         "redoable": true,
                         "jump": [
                             "to_activity_if_correctness:activity3:<50%",
@@ -279,7 +280,7 @@ angular.module('LessonDemo.services', [])
                         "title": "走一步，再走一步-字词终测",
                         "type": "quiz",
                         "is_final": true,
-                        "pool_count": 5,
+                        "pool_count": 4,
                         "randomize_choices": true,
                         "randomize_problems": true,
                         "show_answer": false,
@@ -646,58 +647,58 @@ angular.module('LessonDemo.services', [])
                 return MaterialProvider.getMaterial(parentId);
             }
 
-            //all jump logic for a quiz activity
-            Sandbox.prototype.completeQuizActivity = function (activityData, $scope, correctCount, lessonSummary) {
+            Sandbox.prototype.parseJumpCondition = function (condition, correctCount, totalCount) {
+                var is_percent = false;
+                var targetNum = 0;
 
-                var parseJumpCondition = function (condition, correctCount, totalCount) {
-                    var is_percent = false;
-                    var targetNum = 0;
+                if (condition.slice(condition.length - 1) === "%") {
+                    var correctPercent = parseInt((correctCount * 100) / totalCount);
+                    is_percent = true;
+                }
 
-                    if (condition.slice(condition.length - 1) === "%") {
-                        var correctPercent = parseInt((correctCount * 100) / totalCount);
-                        is_percent = true;
-                    }
-
-                    if (condition.slice(1, 2) === "=") {
-                        if (is_percent) {
-                            targetNum = condition.slice(2, condition.length - 1);
-                        } else {
-                            targetNum = condition.slice(2);
-                        }
-                        if (condition.slice(0, 1) === ">") {
-                            return ((is_percent && (correctPercent >= targetNum)) ||
-                                (!is_percent && (correctCount >= targetNum)));
-                        } else {
-                            return ((is_percent && (correctPercent <= targetNum)) ||
-                                (!is_percent && (correctCount <= targetNum)));
-                        }
+                if (condition.slice(1, 2) === "=") {
+                    if (is_percent) {
+                        targetNum = condition.slice(2, condition.length - 1);
                     } else {
-                        if (is_percent) {
-                            targetNum = condition.slice(1, condition.length - 1);
-                        } else {
-                            targetNum = condition.slice(1);
-                        }
-                        if (condition.slice(0, 1) === ">") {
-                            return ((is_percent && (correctPercent > targetNum)) ||
-                                (!is_percent && (correctCount > targetNum)));
-                        } else if (condition.slice(0, 1) === "<") {
-                            return ((is_percent && (correctPercent < targetNum)) ||
-                                (!is_percent && (correctCount < targetNum)));
-                        } else {
-                            return ((is_percent && (correctPercent == targetNum)) ||
-                                (!is_percent && (correctCount == targetNum)));
-                        }
+                        targetNum = condition.slice(2);
+                    }
+                    if (condition.slice(0, 1) === ">") {
+                        return ((is_percent && (correctPercent >= targetNum)) ||
+                            (!is_percent && (correctCount >= targetNum)));
+                    } else {
+                        return ((is_percent && (correctPercent <= targetNum)) ||
+                            (!is_percent && (correctCount <= targetNum)));
+                    }
+                } else {
+                    if (is_percent) {
+                        targetNum = condition.slice(1, condition.length - 1);
+                    } else {
+                        targetNum = condition.slice(1);
+                    }
+                    if (condition.slice(0, 1) === ">") {
+                        return ((is_percent && (correctPercent > targetNum)) ||
+                            (!is_percent && (correctCount > targetNum)));
+                    } else if (condition.slice(0, 1) === "<") {
+                        return ((is_percent && (correctPercent < targetNum)) ||
+                            (!is_percent && (correctCount < targetNum)));
+                    } else {
+                        return ((is_percent && (correctPercent == targetNum)) ||
+                            (!is_percent && (correctCount == targetNum)));
                     }
                 }
+            }
+
+            //all jump logic for a quiz activity
+            Sandbox.prototype.completeQuizActivity = function (activityData, $scope, correctCount, lessonSummary) {
 
                 if (typeof activityData.jump !== "undefined") {
                     var jump = [];
                     for (var i = 0; i < activityData.jump.length; i++) {
                         jump = activityData.jump[i].split(':');
                         if (((jump[0] === "end_of_lesson_if_correctness") &&
-                            (parseJumpCondition(jump[1], correctCount, activityData.problems.length))) ||
+                            (this.parseJumpCondition(jump[1], correctCount, activityData.problems.length))) ||
                             ((jump[0] === "to_activity_if_correctness") &&
-                                (parseJumpCondition(jump[2], correctCount, activityData.problems.length))) ||
+                                (this.parseJumpCondition(jump[2], correctCount, activityData.problems.length))) ||
                             (jump[0] === "force_to_activity")) {
                             break;
                         }
@@ -705,16 +706,38 @@ angular.module('LessonDemo.services', [])
                     //split the third parameter and apply the jump logic
                     if (i < activityData.jump.length) {
                         if (jump[0] !== "end_of_lesson_if_correctness") {
-                            this.sendEvent("activityComplete_" + activityData.id, $scope, {activity: jump[1], summary: lessonSummary});
+                            if ((typeof activityData.show_summary == "undefined") || (!activityData.show_summary) ||
+                                ((activityData.show_summary) && ($scope.showQuizSummary))) {
+                                this.sendEvent("activityComplete_" + activityData.id, $scope, {activity: jump[1], summary: lessonSummary, should_transition: true});
+                            } else {
+                                this.sendEvent("activityComplete_" + activityData.id, $scope, {activity: jump[1], summary: lessonSummary, should_transition: false});
+                            }
                         } else {
-                            this.sendEvent("endOfLesson", $scope, {summary: lessonSummary});
+                            if ((typeof activityData.show_summary == "undefined") || (!activityData.show_summary) ||
+                                ((activityData.show_summary) && ($scope.showQuizSummary))) {
+                                this.sendEvent("endOfLesson", $scope, {summary: lessonSummary, should_transition: true});
+                            } else {
+                                this.sendEvent("endOfLesson", $scope, {summary: lessonSummary, should_transition: false});
+                            }
                         }
+                        //the student does not complete the jump condition
                     } else {
-                        this.sendEvent("activityComplete_" + activityData.id, $scope, {summary: lessonSummary});
+                        if ((typeof activityData.show_summary == "undefined") || (!activityData.show_summary) ||
+                            ((activityData.show_summary) && ($scope.showQuizSummary))) {
+                            this.sendEvent("activityComplete_" + activityData.id, $scope, {summary: lessonSummary, should_transition: true});
+                        } else {
+                            //send activity complete event to lesson directive without jump
+                            this.sendEvent("activityComplete_" + activityData.id, $scope, {summary: lessonSummary, should_transition: false});
+                        }
                     }
                 } else {
-                    //send activity complete event to lesson directive without jump
-                    this.sendEvent("activityComplete_" + activityData.id, $scope, {summary: lessonSummary});
+                    if ((typeof activityData.show_summary == "undefined") || (!activityData.show_summary) ||
+                        ((activityData.show_summary) && ($scope.showQuizSummary))) {
+                        this.sendEvent("activityComplete_" + activityData.id, $scope, {summary: lessonSummary, should_transition: true});
+                    } else {
+                        //send activity complete event to lesson directive without jump
+                        this.sendEvent("activityComplete_" + activityData.id, $scope, {summary: lessonSummary, should_transition: false});
+                    }
                 }
             }
 
