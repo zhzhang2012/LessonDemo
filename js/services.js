@@ -284,7 +284,7 @@ angular.module('LessonDemo.services', [])
                         "randomize_problems": true,
                         "show_answer": false,
                         "show_summary": true,
-                        "redoable": false,
+                        //"redoable": false,
                         "level": "normal",
                         "badges": [
                             "excellent_quiz:=4",
@@ -497,11 +497,55 @@ angular.module('LessonDemo.services', [])
             materialMap[Material[i].id] = Material[i];
         }
 
+        //random select pool_count problems from problems pool
+        var getShuffledProblems = function (activityData, seed) {
+            var problemsIndex = [];
+            for (var j = 0, max = activityData.problems.length; j < max; j++) {
+                problemsIndex.push(j);
+            }
+            var problemsShuffled = [];
+            for (var k = 0, len = seed.length; k < len; k++) {
+                var r = parseInt(seed[k] * (len - k));
+                problemsShuffled.push(activityData.problems[problemsIndex[r]]);
+                problemsIndex.splice(r, 1);
+            }
+            return problemsShuffled;
+        }
+
+        var getActivityMaterial = function (activityId, seed) {
+            var activityData = this.getMaterial(activityId);
+            //check if problems should be chosen from pool
+            if (typeof activityData.pool_count != "undefined") {
+                //clone a new copy of the original activity material
+                activityData = _.clone(this.getMaterial(activityId));
+                //resume a previous activity
+                if (typeof seed != "undefined") {
+                    var shuffledProblems = getShuffledProblems(activityData, seed);
+                    activityData.problems = shuffledProblems;
+                    activityData.seed = seed;
+                    //enter or review activity
+                } else {
+                    var newSeed = [];
+                    for (var i = 0; i < activityData.pool_count; i++) {
+                        newSeed.push(Math.random());
+                    }
+                    var shuffledProblems = getShuffledProblems(activityData, newSeed);
+                    activityData.problems = shuffledProblems;
+                    activityData.seed = newSeed.slice();
+                }
+                return activityData;
+            } else {
+                return activityData;
+            }
+        }
+
+        //APIs
         var getMaterial = function (moduleId) {
             return materialMap[moduleId];
         }
 
         return {
+            getActivityMaterial: getActivityMaterial,
             getMaterial: getMaterial
         }
     })
@@ -528,18 +572,11 @@ angular.module('LessonDemo.services', [])
                             problems: {},
                             summary: {}
                         };
+                        if (typeof lessonData.activities[i].pool_count != "undefined") {
+                            USERDATA[lessonId].activities[lessonData.activities[i].id].seed = [];
+                        }
                         userdataMap[lessonData.activities[i].id] = USERDATA[lessonId].
                             activities[lessonData.activities[i].id];
-                        for (var j = 0; j < lessonData.activities[i].problems.length; j++) {
-                            USERDATA[lessonId].activities[lessonData.activities[i].id].
-                                problems[lessonData.activities[i].problems[j].id] = {
-                                is_correct: false,
-                                answer: []
-                            }
-                            userdataMap[lessonData.activities[i].problems[j].id] =
-                                USERDATA[lessonId].activities[lessonData.activities[i].id].
-                                    problems[lessonData.activities[i].problems[j].id];
-                        }
                     } else {
                         USERDATA[lessonId].activities[lessonData.activities[i].id] = {
                             summary: {}
@@ -550,6 +587,42 @@ angular.module('LessonDemo.services', [])
                 }
             }
             return USERDATA[lessonId];
+        }
+
+        var getActivityUserdata = function (activityId) {
+            var activityData = MaterialProvider.getMaterial(activityId);
+            if (typeof activityData.pool_count != "undefined") {
+                //enter or review activity, write chosen problems' map in the userdataMap
+                if ((typeof userdataMap[activityId].seed != "undefined") && (userdataMap[activityId].seed.length == 0)) {
+                    activityData = MaterialProvider.getActivityMaterial(activityId);
+                    userdataMap[activityId].seed = activityData.seed;
+                    for (var i = 0; i < activityData.problems.length; i++) {
+                        userdataMap[activityId].problems[activityData.problems[i].id] = {
+                            is_correct: false,
+                            answer: []
+                        };
+                        userdataMap[activityData.problems[i].id] =
+                            userdataMap[activityId].problems[activityData.problems[i].id];
+                    }
+                    return userdataMap[activityId];
+                    //resume activity, userdataMap has already recorded the chosen problems
+                } else {
+                    return userdataMap[activityId];
+                }
+            } else if (activityData.type === "quiz") {
+                for (var i = 0; i < activityData.problems.length; i++) {
+                    userdataMap[activityId].problems[activityData.problems[i].id] = {
+                        is_correct: false,
+                        answer: []
+                    };
+                    userdataMap[activityData.problems[i].id] =
+                        userdataMap[activityId].problems[activityData.problems[i].id];
+                }
+                return userdataMap[activityId];
+                //activity is a lecture
+            } else {
+                return userdataMap[activityId];
+            }
         }
 
         var getUserdata = function (moduleId) {
@@ -588,6 +661,7 @@ angular.module('LessonDemo.services', [])
 
         return{
             getLessonUserdata: getLessonUserdata,
+            getActivityUserdata: getActivityUserdata,
             getUserdata: getUserdata,
             resetUserdata: resetUserdata
         }
@@ -609,12 +683,20 @@ angular.module('LessonDemo.services', [])
 
         function Sandbox() {
 
-            Sandbox.prototype.getMaterial = function (moduleId) {
-                return MaterialProvider.getMaterial(moduleId);
+            Sandbox.prototype.getLessonMaterial = function (lessonId) {
+                return MaterialProvider.getMaterial(lessonId);
+            }
+
+            Sandbox.prototype.getActivityMaterial = function (activityId, seed) {
+                return MaterialProvider.getActivityMaterial(activityId, seed);
             }
 
             Sandbox.prototype.getLessonUserdata = function (lessonId) {
                 return UserdataProvider.getLessonUserdata(lessonId);
+            }
+
+            Sandbox.prototype.getActivityUserdata = function (activityId) {
+                return UserdataProvider.getActivityUserdata(activityId);
             }
 
             Sandbox.prototype.getUserdata = function (moduleId) {

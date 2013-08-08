@@ -57,7 +57,7 @@ angular.module('LessonDemo.directives', [])
         return {
             restrict: "E",
             link: function ($scope, $element) {
-                var lessonData = lessonSandbox.getMaterial($routeParams.lid);
+                var lessonData = lessonSandbox.getLessonMaterial($routeParams.lid);
                 var lessonUserdata = lessonSandbox.getLessonUserdata(lessonData.id);
 
                 //initialize ng-models
@@ -193,14 +193,8 @@ angular.module('LessonDemo.directives', [])
         return {
             restrict: "E",
             link: function ($scope, $element) {
-                var activityData = activitySandbox.getMaterial($routeParams.aid);
-                var activityUserdata = activitySandbox.getUserdata(activityData.id);
-                /*if ((typeof activityData.pool_count != "undefined") &&
-                 (activityData.pool_count <= activityData.problems.length)) {
-                 $scope.problems = activityData.problems.slice(0, activityData.pool_count);
-                 } else {
-                 $scope.problems = activityData.problems;
-                 }*/
+                var activityUserdata = activitySandbox.getActivityUserdata($routeParams.aid);
+                var activityData = activitySandbox.getActivityMaterial($routeParams.aid, activityUserdata.seed);
 
                 $scope.title = activityData.title;
                 $scope.body = activityData.body;
@@ -215,7 +209,7 @@ angular.module('LessonDemo.directives', [])
                             break;
                         }
                     }
-                    $scope.problems = $scope.problems.slice(currProblem);
+                    $scope.problems = activityData.problems.slice(currProblem);
                 }
 
                 $scope.pauseLearn = function () {
@@ -223,7 +217,7 @@ angular.module('LessonDemo.directives', [])
                     activitySandbox.sendEvent("pauseActivity", $scope);
                 }
 
-                //check if the activity has been previously entered. If yes, reset the activityUserdata
+                //check if the activity has been previously completed. If yes, reset the activityUserdata
                 if ((typeof activityUserdata.is_complete != "undefined") && (activityUserdata.is_complete)) {
                     activityUserdata = activitySandbox.resetUserdata("activity", activityData.id);
                 }
