@@ -724,10 +724,6 @@ angular.module('LessonDemo.services', [])
                 }
             }
 
-            Sandbox.prototype.getActivityData = function (parentId) {
-                return MaterialProvider.getMaterial(parentId);
-            }
-
             Sandbox.prototype.parseJumpCondition = function (condition, correctCount, totalCount) {
                 var is_percent = false;
                 var targetNum = 0;
