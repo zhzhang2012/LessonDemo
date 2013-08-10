@@ -321,7 +321,7 @@ angular.module('LessonDemo.directives', [])
                                     }
                                 } else {
                                     //do a page transition and show the next problem
-                                    PageTransitions.nextPage(24);
+                                    PageTransitions.nextPage(24, $("#buttonContainer"));
                                 }
                             } else {
                                 //if the activity both shows snawers and shows summary, apply the same logic of the

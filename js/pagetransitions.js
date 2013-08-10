@@ -57,7 +57,7 @@ var PageTransitions = (function () {
         }
     }
 
-    function nextPage(animation) {
+    function nextPage(animation, buttonContainer) {
 
         if (isAnimating) {
             return false;
@@ -71,9 +71,9 @@ var PageTransitions = (function () {
             ++current;
         }
 
-        /*if(buttonContainer){
-         buttonContainer.hide();
-         }*/
+        if (buttonContainer) {
+            buttonContainer.hide();
+        }
 
         var $nextPage = $pages.eq(current).addClass('pt-page-current'),
             outClass = '', inClass = '';
@@ -384,9 +384,9 @@ var PageTransitions = (function () {
         $outpage.attr('class', $outpage.data('originalClassList'));
         $inpage.attr('class', $inpage.data('originalClassList') + ' pt-page-current');
 
-        /*if(buttonContainer){
-         buttonContainer.show();
-         }*/
+        if (buttonContainer) {
+            buttonContainer.show();
+        }
     }
 
     //init();
