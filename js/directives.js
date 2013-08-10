@@ -8,7 +8,7 @@
 
 angular.module('LessonDemo.directives', [])
 
-    .directive("chapter", function (SandboxProvider, LazyLoader) {
+    .directive("chapter", function (SandboxProvider, $routeParams) {
 
         //create the chapter sandbox
         var chapterSandbox = SandboxProvider.getSandbox();
@@ -16,16 +16,17 @@ angular.module('LessonDemo.directives', [])
         return {
             restrict: "E",
             link: function ($scope, $element) {
-                var chapterData = chapterSandbox.getMaterial();
-                var chapterUserdata = chapterSandbox.getUserdata();
+                var chapterData = chapterSandbox.getChapterMaterial($routeParams.cid);
+                //var chapterUserdata = chapterSandbox.getUserdata();
 
+                $scope.lessons = chapterData.lessons;
             }
         }
     })
 
 
     //lesson module
-    .directive("lesson", function (SandboxProvider, $location, $routeParams) {
+    .directive("lesson", function (SandboxProvider, $location, $routeParams, $http, $templateCache, $compile) {
 
         //create the lesson sandbox
         var lessonSandbox = SandboxProvider.getSandbox();
@@ -42,23 +43,34 @@ angular.module('LessonDemo.directives', [])
 
             callbacks: {
                 onwelcome: function (event, from, to) {
-                    $location.path('/lesson/lesson1');
+                    $location.path('/chapter/chapter1');
                 },
-                onlearn: function (event, from, to, activity_id) {
-                    $location.path('/lesson/lesson1/activity/' + activity_id);
+                onlearn: function (event, from, to, lesson_id, activity_id) {
+                    $location.path('chapter/chapter1/lesson/' + lesson_id + '/activity/' + activity_id);
                 }
             }
         });
 
-        var continueLesson = function (activity_id) {
-            $location.path('/lesson/lesson1/activity/' + activity_id);
+        var continueLesson = function (lesson_id, activity_id) {
+            $location.path('chapter/chapter1/lesson/' + lesson_id + '/activity/' + activity_id);
         }
 
         return {
             restrict: "E",
             link: function ($scope, $element) {
-                var lessonData = lessonSandbox.getLessonMaterial($routeParams.lid);
-                var lessonUserdata = lessonSandbox.getLessonUserdata(lessonData.id);
+                if (typeof $scope.lesson != "undefined") {
+                    var lessonData = lessonSandbox.getLessonMaterial($scope.lesson.id);
+                    var lessonUserdata = lessonSandbox.getLessonUserdata($scope.lesson.id);
+
+                    //load the lesson template on the chapter page
+                    $http.get('partials/lesson.html', {cache: $templateCache}).success(function (contents) {
+                        $element.html(contents);
+                        $compile($element.contents())($scope);
+                    });
+                } else {
+                    var lessonData = lessonSandbox.getLessonMaterial($routeParams.lid);
+                    var lessonUserdata = lessonSandbox.getLessonUserdata($routeParams.lid);
+                }
 
                 //initialize ng-models
                 $scope.title = lessonData.title;
@@ -69,8 +81,8 @@ angular.module('LessonDemo.directives', [])
                 } else {
                     $scope.buttonMsg = "继续学习";
                 }
-
-                $scope.startLesson = function () {
+                $scope.showLessonDialogue = function () {
+                    $scope.lessonDialogue = true;
                     if (!lessonUserdata.is_complete) {
                         $scope.startLesson = true;
                     } else {
@@ -84,21 +96,21 @@ angular.module('LessonDemo.directives', [])
                         $scope.reviewLesson = true;
                     }
                 }
-                $scope.enterActivity = function () {
+                $scope.enterActivity = function (id) {
                     if (typeof lessonUserdata.current_activity === "undefined") {
                         lessonUserdata.current_activity = lessonData.activities[0].id;
-                        FSM.enter(lessonData.activities[0].id);
+                        FSM.enter(id, lessonData.activities[0].id);
                     } else {
-                        FSM.resume(lessonUserdata.current_activity);
+                        FSM.resume(id, lessonUserdata.current_activity);
 
                     }
                 }
-                $scope.reviewActivity = function (activityId) {
+                $scope.reviewActivity = function (lessonId, activityId) {
                     if (typeof lessonUserdata.activities[activityId].current_problem !== "undefined") {
                         lessonUserdata.activities[activityId].current_problem = undefined;
                     }
                     lessonUserdata.current_activity = activityId;
-                    FSM.resume(activityId);
+                    FSM.resume(lessonId, activityId);
                 }
                 //listen to the pause activity request sent by an activity module
                 $scope.$on("pauseActivity", function (event) {
@@ -145,12 +157,12 @@ angular.module('LessonDemo.directives', [])
                             if ((typeof args !== "undefined") && (typeof args.activity !== "undefined")) {
                                 lessonUserdata.current_activity = args.activity;
                                 if (args.should_transition) {
-                                    continueLesson(args.activity);
+                                    continueLesson(lessonData.id, args.activity);
                                 }
                             } else {
                                 lessonUserdata.current_activity = lessonData.activities[index + 1].id;
                                 if (args.should_transition) {
-                                    continueLesson(lessonData.activities[index + 1].id);
+                                    continueLesson(lessonData.id, lessonData.activities[index + 1].id);
                                 }
                             }
                         } else {

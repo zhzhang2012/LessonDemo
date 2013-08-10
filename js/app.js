@@ -5,15 +5,15 @@ angular.module("LessonDemo", ['LessonDemo.controllers', 'LessonDemo.directives',
         $routeProvider
             .when('/', {
                 controller: 'initCtrl',
-                templateUrl: 'partials/subjectShow.html'
+                templateUrl: 'partials/subject.html'
             })
-            .when('/lesson/:lid', {
-                controller: 'lessonCtrl',
-                templateUrl: 'partials/lessonStart.html'
+            .when('/chapter/:cid', {
+                controller: 'chapterCtrl',
+                templateUrl: 'partials/chapter.html'
             })
-            .when('/lesson/:lid/activity/:aid', {
+            .when('/chapter/:cid/lesson/:lid/activity/:aid', {
                 controller: 'activityCtrl',
-                templateUrl: 'partials/lessonShow.html'
+                templateUrl: 'partials/activity.html'
             })
     });
 
