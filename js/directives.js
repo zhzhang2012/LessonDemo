@@ -26,7 +26,7 @@ angular.module('LessonDemo.directives', [])
 
 
     //lesson module
-    .directive("lesson", function (SandboxProvider, $location, $routeParams, $http, $templateCache, $compile) {
+    .directive("lesson", function (SandboxProvider, $location, $routeParams, $http, $q, $templateCache, $compile) {
 
         //create the lesson sandbox
         var lessonSandbox = SandboxProvider.getSandbox();
@@ -59,8 +59,8 @@ angular.module('LessonDemo.directives', [])
             restrict: "E",
             link: function ($scope, $element) {
                 if (typeof $scope.lesson != "undefined") {
-                    var lessonData = lessonSandbox.getLessonMaterial($scope.lesson.id);
-                    var lessonUserdata = lessonSandbox.getLessonUserdata($scope.lesson.id);
+                    var lessonMaterialPromise = lessonSandbox.getLessonMaterial($scope.lesson.id);
+                    var lessonUserdataPromise = lessonSandbox.getLessonUserdata($scope.lesson.id);
 
                     //load the lesson template on the chapter page
                     $http.get('partials/lesson.html', {cache: $templateCache}).success(function (contents) {
@@ -68,119 +68,135 @@ angular.module('LessonDemo.directives', [])
                         $compile($element.contents())($scope);
                     });
                 } else {
-                    var lessonData = lessonSandbox.getLessonMaterial($routeParams.lid);
-                    var lessonUserdata = lessonSandbox.getLessonUserdata($routeParams.lid);
+                    var lessonMaterialPromise = lessonSandbox.getLessonMaterial($routeParams.lid);
+                    var lessonUserdataPromise = lessonSandbox.getLessonUserdata($routeParams.lid);
                 }
 
-                //initialize ng-models
-                $scope.title = lessonData.title;
-                $scope.summary = lessonData.summary;
-                $scope.activities = lessonData.activities;
-                if (typeof lessonUserdata.current_activity === "undefined") {
-                    $scope.buttonMsg = "开始学习";
-                } else {
-                    $scope.buttonMsg = "继续学习";
-                }
-                $scope.showLessonDialogue = function () {
-                    $scope.lessonDialogue = true;
-                    if (!lessonUserdata.is_complete) {
-                        $scope.startLesson = true;
-                    } else {
-                        //remove activities that are not redoable
-                        for (var i = 0; i < lessonData.activities.length; i++) {
-                            if ((typeof lessonData.activities[i].redoable !== "undefined") &&
-                                (!lessonData.activities[i].redoable)) {
-                                $scope.activities.splice(i, 1);
-                            }
-                        }
-                        $scope.reviewLesson = true;
-                    }
-                }
-                $scope.enterActivity = function (id) {
+                //record lessonMaterial and lessonUserdata into a object
+                var lessonTotalData = {};
+                lessonMaterialPromise.then(function (material) {
+                    lessonTotalData.material = material;
+                })
+                lessonUserdataPromise.then(function (userdata) {
+                    lessonTotalData.userdata = userdata;
+                })
+
+                //continue logic after both lessonMaterial and lessonUserdata have been loaded
+                var lessonPromise = $q.all([lessonMaterialPromise, lessonUserdataPromise]);
+                lessonPromise.then(function () {
+                    var lessonData = lessonTotalData.material;
+                    var lessonUserdata = lessonTotalData.userdata;
+
+                    //initialize ng-models
+                    $scope.title = lessonData.title;
+                    $scope.summary = lessonData.summary;
+                    $scope.activities = lessonData.activities;
                     if (typeof lessonUserdata.current_activity === "undefined") {
-                        lessonUserdata.current_activity = lessonData.activities[0].id;
-                        FSM.enter(id, lessonData.activities[0].id);
+                        $scope.buttonMsg = "开始学习";
                     } else {
-                        FSM.resume(id, lessonUserdata.current_activity);
+                        $scope.buttonMsg = "继续学习";
+                    }
+                    $scope.showLessonDialogue = function () {
+                        $scope.lessonDialogue = true;
+                        if (!lessonUserdata.is_complete) {
+                            $scope.startLesson = true;
+                        } else {
+                            //remove activities that are not redoable
+                            for (var i = 0; i < lessonData.activities.length; i++) {
+                                if ((typeof lessonData.activities[i].redoable !== "undefined") &&
+                                    (!lessonData.activities[i].redoable)) {
+                                    $scope.activities.splice(i, 1);
+                                }
+                            }
+                            $scope.reviewLesson = true;
+                        }
+                    }
+                    $scope.enterActivity = function (id) {
+                        if (typeof lessonUserdata.current_activity === "undefined") {
+                            lessonUserdata.current_activity = lessonData.activities[0].id;
+                            FSM.enter(id, lessonData.activities[0].id);
+                        } else {
+                            FSM.resume(id, lessonUserdata.current_activity);
 
+                        }
                     }
-                }
-                $scope.reviewActivity = function (lessonId, activityId) {
-                    if (typeof lessonUserdata.activities[activityId].current_problem !== "undefined") {
-                        lessonUserdata.activities[activityId].current_problem = undefined;
+                    $scope.reviewActivity = function (lessonId, activityId) {
+                        if (typeof lessonUserdata.activities[activityId].current_problem !== "undefined") {
+                            lessonUserdata.activities[activityId].current_problem = undefined;
+                        }
+                        lessonUserdata.current_activity = activityId;
+                        FSM.resume(lessonId, activityId);
                     }
-                    lessonUserdata.current_activity = activityId;
-                    FSM.resume(lessonId, activityId);
-                }
-                //listen to the pause activity request sent by an activity module
-                $scope.$on("pauseActivity", function (event) {
-                    FSM.back();
-                })
-                //listen to the endOfListen event to end the lesson
-                $scope.$on("endOfLesson", function (event, args) {
-                    if ((typeof args !== "undefined") && (typeof args.summary !== "undefined") &&
-                        (typeof args.summary.correctCount !== "undefined")) {
-                        lessonUserdata.summary.correctCount = args.summary.correctCount;
-                        lessonUserdata.summary.correctPercent = args.summary.correctPercent;
-                    }
-                    //return to the lesson page;
-                    lessonUserdata.current_activity = undefined;
-                    //TODO: badges decide the condition
-                    if ((typeof lessonUserdata.summary.correctPercent != "undefined") &&
-                        (lessonUserdata.summary.correctPercent > 70)) {
-                        lessonUserdata.is_complete = true;
-                    } else if ((typeof lessonUserdata.summary.correctPercent == "undefined")) {
-                        lessonUserdata.summary.correctPercent = 100;
-                        lessonUserdata.is_complete = true;
-                    }
-
-                    if (args.should_transition) {
+                    //listen to the pause activity request sent by an activity module
+                    $scope.$on("pauseActivity", function (event) {
                         FSM.back();
-                    }
-                })
-
-                //iterate all the activities and add listeners
-                angular.forEach(lessonData.activities, function (activity, index) {
-
-                    //listen to the complete event sent by an activity module
-                    $scope.$on("activityComplete_" + activity.id, function (event, args) {
-                        //update summary if received args
+                    })
+                    //listen to the endOfListen event to end the lesson
+                    $scope.$on("endOfLesson", function (event, args) {
                         if ((typeof args !== "undefined") && (typeof args.summary !== "undefined") &&
                             (typeof args.summary.correctCount !== "undefined")) {
                             lessonUserdata.summary.correctCount = args.summary.correctCount;
                             lessonUserdata.summary.correctPercent = args.summary.correctPercent;
                         }
+                        //return to the lesson page;
+                        lessonUserdata.current_activity = undefined;
+                        //TODO: badges decide the condition
+                        if ((typeof lessonUserdata.summary.correctPercent != "undefined") &&
+                            (lessonUserdata.summary.correctPercent > 70)) {
+                            lessonUserdata.is_complete = true;
+                        } else if ((typeof lessonUserdata.summary.correctPercent == "undefined")) {
+                            lessonUserdata.summary.correctPercent = 100;
+                            lessonUserdata.is_complete = true;
+                        }
 
-                        //operate jump logic
-                        if (index != lessonData.activities.length - 1) {
-                            //check if the listener receives jump args
-                            if ((typeof args !== "undefined") && (typeof args.activity !== "undefined")) {
-                                lessonUserdata.current_activity = args.activity;
-                                if (args.should_transition) {
-                                    continueLesson(lessonData.id, args.activity);
+                        if (args.should_transition) {
+                            FSM.back();
+                        }
+                    })
+
+                    //iterate all the activities and add listeners
+                    angular.forEach(lessonData.activities, function (activity, index) {
+
+                        //listen to the complete event sent by an activity module
+                        $scope.$on("activityComplete_" + activity.id, function (event, args) {
+                            //update summary if received args
+                            if ((typeof args !== "undefined") && (typeof args.summary !== "undefined") &&
+                                (typeof args.summary.correctCount !== "undefined")) {
+                                lessonUserdata.summary.correctCount = args.summary.correctCount;
+                                lessonUserdata.summary.correctPercent = args.summary.correctPercent;
+                            }
+
+                            //operate jump logic
+                            if (index != lessonData.activities.length - 1) {
+                                //check if the listener receives jump args
+                                if ((typeof args !== "undefined") && (typeof args.activity !== "undefined")) {
+                                    lessonUserdata.current_activity = args.activity;
+                                    if (args.should_transition) {
+                                        continueLesson(lessonData.id, args.activity);
+                                    }
+                                } else {
+                                    lessonUserdata.current_activity = lessonData.activities[index + 1].id;
+                                    if (args.should_transition) {
+                                        continueLesson(lessonData.id, lessonData.activities[index + 1].id);
+                                    }
                                 }
                             } else {
-                                lessonUserdata.current_activity = lessonData.activities[index + 1].id;
+                                //return to the lesson page;
+                                lessonUserdata.current_activity = undefined;
+                                //TODO: badges decide the condition
+                                if ((typeof lessonUserdata.summary.correctPercent != "undefined") &&
+                                    (lessonUserdata.summary.correctPercent > 70)) {
+                                    lessonUserdata.is_complete = true;
+                                } else if ((typeof lessonUserdata.summary.correctPercent == "undefined")) {
+                                    lessonUserdata.summary.correctPercent = 100;
+                                    lessonUserdata.is_complete = true;
+                                }
+                                console.log(lessonUserdata);
                                 if (args.should_transition) {
-                                    continueLesson(lessonData.id, lessonData.activities[index + 1].id);
+                                    FSM.back();
                                 }
                             }
-                        } else {
-                            //return to the lesson page;
-                            lessonUserdata.current_activity = undefined;
-                            //TODO: badges decide the condition
-                            if ((typeof lessonUserdata.summary.correctPercent != "undefined") &&
-                                (lessonUserdata.summary.correctPercent > 70)) {
-                                lessonUserdata.is_complete = true;
-                            } else if ((typeof lessonUserdata.summary.correctPercent == "undefined")) {
-                                lessonUserdata.summary.correctPercent = 100;
-                                lessonUserdata.is_complete = true;
-                            }
-                            console.log(lessonUserdata);
-                            if (args.should_transition) {
-                                FSM.back();
-                            }
-                        }
+                        })
                     })
                 })
             }

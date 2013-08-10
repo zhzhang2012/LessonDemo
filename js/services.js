@@ -7,8 +7,9 @@
  */
 angular.module('LessonDemo.services', [])
     //provide lesson data
-    .factory("MaterialProvider", function ($http) {
+    .factory("MaterialProvider", function ($http, $q) {
 
+        var Material = {};
         var materialMap = {};
 
         var getChapterMaterial = function (chapterId) {
@@ -23,955 +24,38 @@ angular.module('LessonDemo.services', [])
                 ]}
         }
 
+        var getLessonMaterial = function (lessonId) {
+            var deferred = $q.defer();
+            var getLessonPromise = deferred.promise;
 
-        var Material = [
-            {
-                "id": "lesson1",
-                "title": "走一步，再走一步",
-                "keywords": ["现代文", "略读课文", "叙事"],
-                "summary": "课文写的是“我”童年时一次“脱险”的经历，其中蕴含着生活的哲理。在人生道路上常常会遇到意想不到的困难，“我”的脱险对你也会有宝贵的启示。：",
-                "cover_image": "悬崖.jpg",
-                "objectives": ["让熊孩子们了解本文难点字词，学会熟练运用。"],
-                "intended_audience": ["宝宝们"],
-                "level": "easy",
-                "activities": [
-                    {
-                        "id": "activity1",
-                        "parent_id": "lesson1",
-                        "title": "字词讲解第一部分",
-                        "type": "lecture",
-                        "redoable": true,
-                        "body": "走一步，再走一步字词讲解<video src='走一步，再走一步-1.mp4'></video>",
-                        "level": "easy",
-                        "badges": [
-                            "complete_video"
-                        ]
-                    },
-                    {
-                        "id": "activity2",
-                        "parent_id": "lesson1",
-                        "title": "走一步，再走一步-字词测试第一部分",
-                        "type": "quiz",
-                        "show_answer": true,
-                        "show_summary": true,
-                        "redoable": true,
-                        "jump": ["to_activity_if_correctness:activity4:>60%"],
-                        "level": "easy",
-                        "badges": [
-                            "excellent_quiz:=3",
-                            "good_quiz:>=2"
-                        ],
-                        "problems": [
-                            {
-                                "id": "a2p1",
-                                "parent_id": "activity2",
-                                "title": "选出下面加引号多音字的正确读音：",
-                                "type": "singlechoice",
-                                "body": "雨季开始时， 我们预料有“闷热”的天气。",
-                                "level": "easy",
-                                "choices": [
-                                    {
-                                        "id": "a2p1c1",
-                                        "body": "Mēn",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a2p1c2",
-                                        "body": "Mén",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a2p1c3",
-                                        "body": "Měn",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a2p1c4",
-                                        "body": "Mèn",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a2p2",
-                                "parent_id": "activity2",
-                                "title": "选出下面加引号多音字的正确读音：",
-                                "type": "singlechoice",
-                                "body": "士兵在打完子弹之后用石头把敌人击毙。",
-                                "level": "normal",
-                                "choices": [
-                                    {
-                                        "id": "a2p2c1",
-                                        "body": "Dān",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a2p2c2",
-                                        "body": "Dàn",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a2p2c3",
-                                        "body": "Tán",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a2p2c4",
-                                        "body": "Dǎn",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a2p3",
-                                "parent_id": "activity2",
-                                "title": "下面哪一个句子的括号里最适合填入‘心惊肉跳’：",
-                                "type": "singlechoice",
-                                "body": "下面哪一个句子的括号里最适合填入‘心惊肉跳’：",
-                                "level": "normal",
-                                "choices": [
-                                    {
-                                        "id": "a2p3c1",
-                                        "body": "高速公路上出了车祸，现场十分惨烈，一片()。",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a2p3c2",
-                                        "body": "我并不害怕胆小的鳄鱼，但是饥饿的缅甸蟒蛇使我（）。",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a2p3c3",
-                                        "body": "但这座城市的居民们却远非那么（）。",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a2p3c4",
-                                        "body": "我们听到那间屋子里的小孩在哭的（）。",
-                                        "is_correct": false
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "id": "activity3",
-                        "parent_id": "lesson1",
-                        "title": "字词讲解第二部分",
-                        "type": "lecture",
-                        "redoable": true,
-                        "body": "走一步，再走一步字词讲解<video src='走一步，再走一步-2.mp4'></video>",
-                        "level": "easy",
-                        "badges": [
-                            "complete_video"
-                        ]
-                    },
-                    {
-                        "id": "activity4",
-                        "parent_id": "lesson1",
-                        "title": "走一步，再走一步-字词测试第二部分",
-                        "type": "quiz",
-                        "show_summary": true,
-                        "redoable": true,
-                        "jump": [
-                            "to_activity_if_correctness:activity3:<50%",
-                            "end_of_lesson_if_correctness:=100%",
-                            "force_to_activity:activity6"
-                        ],
-                        "level": "easy",
-                        "badges": [
-                            "excellent_quiz:=3",
-                            "good_quiz:>=2"
-                        ],
-                        "problems": [
-                            {
-                                "id": "a4p1",
-                                "parent_id": "activity4",
-                                "title": "选出下面加引号多音字的正确读音：",
-                                "type": "singlechoice",
-                                "body": "他们团结一致以应付紧急情况。",
-                                "level": "easy",
-                                "choices": [
-                                    {
-                                        "id": "a4p1c1",
-                                        "body": "Yīng",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a4p1c2",
-                                        "body": "Yìng",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a4p1c3",
-                                        "body": "Yíng",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a4p1c4",
-                                        "body": "Yǐng",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a4p2",
-                                "parent_id": "activity4",
-                                "title": "选出下面加引号多音字的正确读音：",
-                                "type": "singlechoice",
-                                "body": "这场戏我们还没尽情欣赏就结束了。",
-                                "level": "easy",
-                                "choices": [
-                                    {
-                                        "id": "a4p2c1",
-                                        "body": "Jīn",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a4p2c2",
-                                        "body": "Jǐn",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a4p2c3",
-                                        "body": "Jìn",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a4p2c4",
-                                        "body": "Jìng",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a4p3",
-                                "parent_id": "activity4",
-                                "title": "下面词语解释有误的是：",
-                                "type": "singlechoice",
-                                "body": "下面词语解释有误的是：",
-                                "level": "easy",
-                                "choices": [
-                                    {
-                                        "id": "a4p3c1",
-                                        "body": "悬崖：高而陡的山崖 凝视：长久的望着",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a4p3c2",
-                                        "body": "嶙峋：形容人瘦削 灌木：灌溉树木",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a4p3c3",
-                                        "body": "目眩：眼睛昏花 抽泣：抽噎，抽抽搭搭地哭",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a4p3c4",
-                                        "body": "纳罕：惊奇，诧异 小心翼翼：谨慎小心，丝毫不敢疏忽的样子。",
-                                        "is_correct": false
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "id": "activity5",
-                        "parent_id": "lesson1",
-                        "title": "字词巩固讲解",
-                        "type": "lecture",
-                        "redoable": true,
-                        "body": "走一步，再走一步字词巩固<pdf src='走一步，再走一步-1.pdf'></pdf><pdf src='走一步，再走一步-2.pdf'></pdf>",
-                        "level": "normal",
-                        "badges": [
-                            "complete_pdf"
-                        ]
-                    },
-                    {
-                        "id": "activity6",
-                        "parent_id": "lesson1",
-                        "title": "走一步，再走一步-字词终测",
-                        "type": "quiz",
-                        "is_final": true,
-                        "pool_count": 4,
-                        "randomize_choices": true,
-                        "randomize_problems": true,
-                        "show_answer": false,
-                        "show_summary": true,
-                        "level": "normal",
-                        "badges": [
-                            "excellent_quiz:=4",
-                            "good_quiz:>=3"
-                        ],
-                        "problems": [
-                            {
-                                "id": "a6p1",
-                                "parent_id": "activity6",
-                                "title": "选出下面加引号多音字的正确读音：",
-                                "type": "singlechoice",
-                                "body": "雨季开始时， 我们预料有“闷热”的天气。",
-                                "level": "easy",
-                                "choices": [
-                                    {
-                                        "id": "a6p1c1",
-                                        "body": "Mēn",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a6p1c2",
-                                        "body": "Mén",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p1c3",
-                                        "body": "Měn",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p1c4",
-                                        "body": "Mèn",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a6p2",
-                                "parent_id": "activity6",
-                                "title": "选出下面加引号多音字的正确读音：",
-                                "type": "singlechoice",
-                                "body": "士兵在打完子弹之后用石头把敌人击毙。",
-                                "level": "normal",
-                                "choices": [
-                                    {
-                                        "id": "a6p2c1",
-                                        "body": "Dān",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p2c2",
-                                        "body": "Dàn",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a6p2c3",
-                                        "body": "Tán",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p2c4",
-                                        "body": "Dǎn",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a6p3",
-                                "parent_id": "activity6",
-                                "title": "下面哪一个句子的括号里最适合填入‘心惊肉跳’：",
-                                "type": "singlechoice",
-                                "body": "下面哪一个句子的括号里最适合填入‘心惊肉跳’：",
-                                "level": "normal",
-                                "choices": [
-                                    {
-                                        "id": "a6p3c1",
-                                        "body": "高速公路上出了车祸，现场十分惨烈，一片()。",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p3c2",
-                                        "body": "我并不害怕胆小的鳄鱼，但是饥饿的缅甸蟒蛇使我（）。",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a6p3c3",
-                                        "body": "但这座城市的居民们却远非那么（）。",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p3c4",
-                                        "body": "我们听到那间屋子里的小孩在哭的（）。",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a6p4",
-                                "parent_id": "activity6",
-                                "title": "选出下面加引号多音字的正确读音：",
-                                "type": "singlechoice",
-                                "body": "他们团结一致以应付紧急情况。",
-                                "level": "easy",
-                                "choices": [
-                                    {
-                                        "id": "a6p4c1",
-                                        "body": "Yīng",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p4c2",
-                                        "body": "Yìng",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a6p4c3",
-                                        "body": "Yíng",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p4c4",
-                                        "body": "Yǐng",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a6p5",
-                                "parent_id": "activity6",
-                                "title": "选出下面加引号多音字的正确读音：",
-                                "type": "singlechoice",
-                                "body": "这场戏我们还没尽情欣赏就结束了。",
-                                "level": "easy",
-                                "choices": [
-                                    {
-                                        "id": "a6p5c1",
-                                        "body": "Jīn",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p5c2",
-                                        "body": "Jǐn",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p5c3",
-                                        "body": "Jìn",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a6p5c4",
-                                        "body": "Jìng",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a6p6",
-                                "parent_id": "activity6",
-                                "title": "下面词语解释有误的是：",
-                                "type": "singlechoice",
-                                "body": "下面词语解释有误的是：",
-                                "level": "easy",
-                                "choices": [
-                                    {
-                                        "id": "a6p6c1",
-                                        "body": "悬崖：高而陡的山崖 凝视：长久的望着",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p6c2",
-                                        "body": "嶙峋：形容人瘦削 灌木：灌溉树木",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a6p6c3",
-                                        "body": "目眩：眼睛昏花 抽泣：抽噎，抽抽搭搭地哭",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p6c4",
-                                        "body": "纳罕：惊奇，诧异 小心翼翼：谨慎小心，丝毫不敢疏忽的样子。",
-                                        "is_correct": false
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                "id": "lesson2",
-                "title": "又走一步，摔死了",
-                "keywords": ["现代文", "略读课文", "叙事"],
-                "summary": "课文写的是“我”童年时一次“脱险”的经历，其中蕴含着生活的哲理。在人生道路上常常会遇到意想不到的困难，“我”的脱险对你也会有宝贵的启示。：",
-                "cover_image": "悬崖.jpg",
-                "objectives": ["让熊孩子们了解本文难点字词，学会熟练运用。"],
-                "intended_audience": ["宝宝们"],
-                "level": "easy",
-                "activities": [
-                    {
-                        "id": "activity1",
-                        "parent_id": "lesson1",
-                        "title": "字词讲解第一部分",
-                        "type": "lecture",
-                        "redoable": true,
-                        "body": "走一步，再走一步字词讲解<video src='走一步，再走一步-1.mp4'></video>",
-                        "level": "easy",
-                        "badges": [
-                            "complete_video"
-                        ]
-                    },
-                    {
-                        "id": "activity2",
-                        "parent_id": "lesson1",
-                        "title": "走一步，再走一步-字词测试第一部分",
-                        "type": "quiz",
-                        "show_answer": true,
-                        "show_summary": true,
-                        "redoable": true,
-                        "jump": ["to_activity_if_correctness:activity4:>60%"],
-                        "level": "easy",
-                        "badges": [
-                            "excellent_quiz:=3",
-                            "good_quiz:>=2"
-                        ],
-                        "problems": [
-                            {
-                                "id": "a2p1",
-                                "parent_id": "activity2",
-                                "title": "选出下面加引号多音字的正确读音：",
-                                "type": "singlechoice",
-                                "body": "雨季开始时， 我们预料有“闷热”的天气。",
-                                "level": "easy",
-                                "choices": [
-                                    {
-                                        "id": "a2p1c1",
-                                        "body": "Mēn",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a2p1c2",
-                                        "body": "Mén",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a2p1c3",
-                                        "body": "Měn",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a2p1c4",
-                                        "body": "Mèn",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a2p2",
-                                "parent_id": "activity2",
-                                "title": "选出下面加引号多音字的正确读音：",
-                                "type": "singlechoice",
-                                "body": "士兵在打完子弹之后用石头把敌人击毙。",
-                                "level": "normal",
-                                "choices": [
-                                    {
-                                        "id": "a2p2c1",
-                                        "body": "Dān",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a2p2c2",
-                                        "body": "Dàn",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a2p2c3",
-                                        "body": "Tán",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a2p2c4",
-                                        "body": "Dǎn",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a2p3",
-                                "parent_id": "activity2",
-                                "title": "下面哪一个句子的括号里最适合填入‘心惊肉跳’：",
-                                "type": "singlechoice",
-                                "body": "下面哪一个句子的括号里最适合填入‘心惊肉跳’：",
-                                "level": "normal",
-                                "choices": [
-                                    {
-                                        "id": "a2p3c1",
-                                        "body": "高速公路上出了车祸，现场十分惨烈，一片()。",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a2p3c2",
-                                        "body": "我并不害怕胆小的鳄鱼，但是饥饿的缅甸蟒蛇使我（）。",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a2p3c3",
-                                        "body": "但这座城市的居民们却远非那么（）。",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a2p3c4",
-                                        "body": "我们听到那间屋子里的小孩在哭的（）。",
-                                        "is_correct": false
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "id": "activity3",
-                        "parent_id": "lesson1",
-                        "title": "字词讲解第二部分",
-                        "type": "lecture",
-                        "redoable": true,
-                        "body": "走一步，再走一步字词讲解<video src='走一步，再走一步-2.mp4'></video>",
-                        "level": "easy",
-                        "badges": [
-                            "complete_video"
-                        ]
-                    },
-                    {
-                        "id": "activity4",
-                        "parent_id": "lesson1",
-                        "title": "走一步，再走一步-字词测试第二部分",
-                        "type": "quiz",
-                        "show_summary": true,
-                        "redoable": true,
-                        "jump": [
-                            "to_activity_if_correctness:activity3:<50%",
-                            "end_of_lesson_if_correctness:=100%",
-                            "force_to_activity:activity6"
-                        ],
-                        "level": "easy",
-                        "badges": [
-                            "excellent_quiz:=3",
-                            "good_quiz:>=2"
-                        ],
-                        "problems": [
-                            {
-                                "id": "a4p1",
-                                "parent_id": "activity4",
-                                "title": "选出下面加引号多音字的正确读音：",
-                                "type": "singlechoice",
-                                "body": "他们团结一致以应付紧急情况。",
-                                "level": "easy",
-                                "choices": [
-                                    {
-                                        "id": "a4p1c1",
-                                        "body": "Yīng",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a4p1c2",
-                                        "body": "Yìng",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a4p1c3",
-                                        "body": "Yíng",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a4p1c4",
-                                        "body": "Yǐng",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a4p2",
-                                "parent_id": "activity4",
-                                "title": "选出下面加引号多音字的正确读音：",
-                                "type": "singlechoice",
-                                "body": "这场戏我们还没尽情欣赏就结束了。",
-                                "level": "easy",
-                                "choices": [
-                                    {
-                                        "id": "a4p2c1",
-                                        "body": "Jīn",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a4p2c2",
-                                        "body": "Jǐn",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a4p2c3",
-                                        "body": "Jìn",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a4p2c4",
-                                        "body": "Jìng",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a4p3",
-                                "parent_id": "activity4",
-                                "title": "下面词语解释有误的是：",
-                                "type": "singlechoice",
-                                "body": "下面词语解释有误的是：",
-                                "level": "easy",
-                                "choices": [
-                                    {
-                                        "id": "a4p3c1",
-                                        "body": "悬崖：高而陡的山崖 凝视：长久的望着",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a4p3c2",
-                                        "body": "嶙峋：形容人瘦削 灌木：灌溉树木",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a4p3c3",
-                                        "body": "目眩：眼睛昏花 抽泣：抽噎，抽抽搭搭地哭",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a4p3c4",
-                                        "body": "纳罕：惊奇，诧异 小心翼翼：谨慎小心，丝毫不敢疏忽的样子。",
-                                        "is_correct": false
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "id": "activity5",
-                        "parent_id": "lesson1",
-                        "title": "字词巩固讲解",
-                        "type": "lecture",
-                        "redoable": true,
-                        "body": "走一步，再走一步字词巩固<pdf src='走一步，再走一步-1.pdf'></pdf><pdf src='走一步，再走一步-2.pdf'></pdf>",
-                        "level": "normal",
-                        "badges": [
-                            "complete_pdf"
-                        ]
-                    },
-                    {
-                        "id": "activity6",
-                        "parent_id": "lesson1",
-                        "title": "走一步，再走一步-字词终测",
-                        "type": "quiz",
-                        "is_final": true,
-                        "pool_count": 4,
-                        "randomize_choices": true,
-                        "randomize_problems": true,
-                        "show_answer": false,
-                        "show_summary": true,
-                        "level": "normal",
-                        "badges": [
-                            "excellent_quiz:=4",
-                            "good_quiz:>=3"
-                        ],
-                        "problems": [
-                            {
-                                "id": "a6p1",
-                                "parent_id": "activity6",
-                                "title": "选出下面加引号多音字的正确读音：",
-                                "type": "singlechoice",
-                                "body": "雨季开始时， 我们预料有“闷热”的天气。",
-                                "level": "easy",
-                                "choices": [
-                                    {
-                                        "id": "a6p1c1",
-                                        "body": "Mēn",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a6p1c2",
-                                        "body": "Mén",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p1c3",
-                                        "body": "Měn",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p1c4",
-                                        "body": "Mèn",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a6p2",
-                                "parent_id": "activity6",
-                                "title": "选出下面加引号多音字的正确读音：",
-                                "type": "singlechoice",
-                                "body": "士兵在打完子弹之后用石头把敌人击毙。",
-                                "level": "normal",
-                                "choices": [
-                                    {
-                                        "id": "a6p2c1",
-                                        "body": "Dān",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p2c2",
-                                        "body": "Dàn",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a6p2c3",
-                                        "body": "Tán",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p2c4",
-                                        "body": "Dǎn",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a6p3",
-                                "parent_id": "activity6",
-                                "title": "下面哪一个句子的括号里最适合填入‘心惊肉跳’：",
-                                "type": "singlechoice",
-                                "body": "下面哪一个句子的括号里最适合填入‘心惊肉跳’：",
-                                "level": "normal",
-                                "choices": [
-                                    {
-                                        "id": "a6p3c1",
-                                        "body": "高速公路上出了车祸，现场十分惨烈，一片()。",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p3c2",
-                                        "body": "我并不害怕胆小的鳄鱼，但是饥饿的缅甸蟒蛇使我（）。",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a6p3c3",
-                                        "body": "但这座城市的居民们却远非那么（）。",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p3c4",
-                                        "body": "我们听到那间屋子里的小孩在哭的（）。",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a6p4",
-                                "parent_id": "activity6",
-                                "title": "选出下面加引号多音字的正确读音：",
-                                "type": "singlechoice",
-                                "body": "他们团结一致以应付紧急情况。",
-                                "level": "easy",
-                                "choices": [
-                                    {
-                                        "id": "a6p4c1",
-                                        "body": "Yīng",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p4c2",
-                                        "body": "Yìng",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a6p4c3",
-                                        "body": "Yíng",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p4c4",
-                                        "body": "Yǐng",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a6p5",
-                                "parent_id": "activity6",
-                                "title": "选出下面加引号多音字的正确读音：",
-                                "type": "singlechoice",
-                                "body": "这场戏我们还没尽情欣赏就结束了。",
-                                "level": "easy",
-                                "choices": [
-                                    {
-                                        "id": "a6p5c1",
-                                        "body": "Jīn",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p5c2",
-                                        "body": "Jǐn",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p5c3",
-                                        "body": "Jìn",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a6p5c4",
-                                        "body": "Jìng",
-                                        "is_correct": false
-                                    }
-                                ]
-                            },
-                            {
-                                "id": "a6p6",
-                                "parent_id": "activity6",
-                                "title": "下面词语解释有误的是：",
-                                "type": "singlechoice",
-                                "body": "下面词语解释有误的是：",
-                                "level": "easy",
-                                "choices": [
-                                    {
-                                        "id": "a6p6c1",
-                                        "body": "悬崖：高而陡的山崖 凝视：长久的望着",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p6c2",
-                                        "body": "嶙峋：形容人瘦削 灌木：灌溉树木",
-                                        "is_correct": true
-                                    },
-                                    {
-                                        "id": "a6p6c3",
-                                        "body": "目眩：眼睛昏花 抽泣：抽噎，抽抽搭搭地哭",
-                                        "is_correct": false
-                                    },
-                                    {
-                                        "id": "a6p6c4",
-                                        "body": "纳罕：惊奇，诧异 小心翼翼：谨慎小心，丝毫不敢疏忽的样子。",
-                                        "is_correct": false
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            }
-        ];
+            var promise = $http.jsonp("http://127.0.0.1:3000/lesson/" + lessonId + "?callback=JSON_CALLBACK");
 
-        for (var i = 0; i < Material.length; i++) {
-            for (var j = 0; j < Material[i].activities.length; j++) {
-                //if randomize problems, shuffle all the problems in all activities
-                if ((typeof Material[i].activities[j].randomize_problems != "undefined") &&
-                    (Material[i].activities[j].randomize_problems)) {
-                    Material[i].activities[j].problems = _.shuffle(Material[i].activities[j].problems);
-                }
-                //if randomize choices, shuffle all the choices in all problems
-                if ((typeof Material[i].activities[j].randomize_choices != "undefined") &&
-                    (Material[i].activities[j].randomize_choices)) {
-                    for (var k = 0; k < Material[i].activities[j].problems[k].choices.length; k++) {
-                        Material[i].activities[j].problems[k].choices = _.shuffle(Material[i].activities[j].problems[k].choices);
+            promise.success(function (data) {
+                Material = data;
+                for (var j = 0; j < Material.activities.length; j++) {
+                    //if randomize problems, shuffle all the problems in all activities
+                    if ((typeof Material.activities[j].randomize_problems != "undefined") &&
+                        (Material.activities[j].randomize_problems)) {
+                        Material.activities[j].problems = _.shuffle(Material.activities[j].problems);
                     }
+                    //if randomize choices, shuffle all the choices in all problems
+                    if ((typeof Material.activities[j].randomize_choices != "undefined") &&
+                        (Material.activities[j].randomize_choices)) {
+                        for (var k = 0; k < Material.activities[j].problems[k].choices.length; k++) {
+                            Material.activities[j].problems[k].choices = _.shuffle(Material.activities[j].problems[k].choices);
+                        }
+                    }
+                    materialMap[Material.activities[j].id] = Material.activities[j];
                 }
-                materialMap[Material[i].activities[j].id] = Material[i].activities[j];
-            }
-            materialMap[Material[i].id] = Material[i];
+                materialMap[Material.id] = Material;
+
+                deferred.resolve(Material);
+            })
+            promise.error(function (data, err) {
+                console.log("Load Lesson Data Error: " + err);
+            })
+
+            return getLessonPromise;
         }
 
         //random select pool_count problems from problems pool
@@ -1022,19 +106,22 @@ angular.module('LessonDemo.services', [])
         }
 
         return {
+            getLessonMaterial: getLessonMaterial,
             getChapterMaterial: getChapterMaterial,
             getActivityMaterial: getActivityMaterial,
             getMaterial: getMaterial
         }
     })
 
-    .factory("UserdataProvider", function (MaterialProvider) {
+    .factory("UserdataProvider", function (MaterialProvider, $q) {
         var USERDATA = {};
         var userdataMap = {};
 
         var getLessonUserdata = function (lessonId) {
+            var deferred = $q.defer();
+            var lessonPromise = deferred.promise;
+
             if (typeof USERDATA[lessonId] == "undefined") {
-                var lessonData = MaterialProvider.getMaterial(lessonId);
                 USERDATA[lessonId] = {
                     is_complete: false,
                     activities: {},
@@ -1042,28 +129,36 @@ angular.module('LessonDemo.services', [])
                 };
                 userdataMap[lessonId] = USERDATA[lessonId];
 
-                for (var i = 0; i < lessonData.activities.length; i++) {
-                    if (lessonData.activities[i].type === 'quiz') {
-                        USERDATA[lessonId].activities[lessonData.activities[i].id] = {
-                            is_complete: false,
-                            problems: {},
-                            summary: {}
-                        };
-                        if (typeof lessonData.activities[i].pool_count != "undefined") {
-                            USERDATA[lessonId].activities[lessonData.activities[i].id].seed = [];
+                var promise = MaterialProvider.getLessonMaterial(lessonId);
+                promise.then(function (material) {
+                    var lessonData = material;
+                    for (var i = 0; i < lessonData.activities.length; i++) {
+                        if (lessonData.activities[i].type === 'quiz') {
+                            USERDATA[lessonId].activities[lessonData.activities[i].id] = {
+                                is_complete: false,
+                                problems: {},
+                                summary: {}
+                            };
+                            if (typeof lessonData.activities[i].pool_count != "undefined") {
+                                USERDATA[lessonId].activities[lessonData.activities[i].id].seed = [];
+                            }
+                            userdataMap[lessonData.activities[i].id] = USERDATA[lessonId].
+                                activities[lessonData.activities[i].id];
+                        } else {
+                            USERDATA[lessonId].activities[lessonData.activities[i].id] = {
+                                summary: {}
+                            };
+                            userdataMap[lessonData.activities[i].id] = USERDATA[lessonId].
+                                activities[lessonData.activities[i].id];
                         }
-                        userdataMap[lessonData.activities[i].id] = USERDATA[lessonId].
-                            activities[lessonData.activities[i].id];
-                    } else {
-                        USERDATA[lessonId].activities[lessonData.activities[i].id] = {
-                            summary: {}
-                        };
-                        userdataMap[lessonData.activities[i].id] = USERDATA[lessonId].
-                            activities[lessonData.activities[i].id];
                     }
-                }
+                    deferred.resolve(USERDATA[lessonId]);
+                })
+            } else {
+                deferred.resolve(USERDATA[lessonId])
             }
-            return USERDATA[lessonId];
+
+            return lessonPromise;
         }
 
         var getActivityUserdata = function (activityId) {
@@ -1165,7 +260,7 @@ angular.module('LessonDemo.services', [])
             }
 
             Sandbox.prototype.getLessonMaterial = function (lessonId) {
-                return MaterialProvider.getMaterial(lessonId);
+                return MaterialProvider.getLessonMaterial(lessonId);
             }
 
             Sandbox.prototype.getActivityMaterial = function (activityId, seed) {
