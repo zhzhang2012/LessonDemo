@@ -1,16 +1,12 @@
 {
-    "id": "lesson1",
-    "title": "走一步，再走一步",
+    "id": "lesson2",
+    "title": "又走一步，摔死了",
     "keywords": ["现代文", "略读课文", "叙事"],
     "summary": "课文写的是“我”童年时一次“脱险”的经历，其中蕴含着生活的哲理。在人生道路上常常会遇到意想不到的困难，“我”的脱险对你也会有宝贵的启示。：",
     "cover_image": "悬崖.jpg",
     "objectives": ["让熊孩子们了解本文难点字词，学会熟练运用。"],
     "intended_audience": ["宝宝们"],
     "level": "easy",
-    "pass_score": "50%",
-    "badges": [
-        "bronze_lesson:>50%"
-    ],
     "activities": [
         {
             "id": "activity1",

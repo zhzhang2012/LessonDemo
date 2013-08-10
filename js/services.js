@@ -28,7 +28,8 @@ angular.module('LessonDemo.services', [])
             var deferred = $q.defer();
             var getLessonPromise = deferred.promise;
 
-            var promise = $http.jsonp("http://127.0.0.1:3000/lesson/" + lessonId + "?callback=JSON_CALLBACK");
+            //var promise = $http.jsonp("http://192.168.3.100:3000/lesson/" + lessonId + "?callback=JSON_CALLBACK");
+            var promise = $http.get("data/" + lessonId + ".json");
 
             promise.success(function (data) {
                 Material = data;
@@ -304,6 +305,19 @@ angular.module('LessonDemo.services', [])
                 return MaterialProvider.getMaterial(parentId);
             }
 
+            //a parser for lesson complete logic
+            Sandbox.prototype.parseCompleteCondition = function (pass_score, summary) {
+                var target_score = 0;
+                if (pass_score.slice(pass_score.length - 1) === "%") {
+                    target_score = parseInt(pass_score.slice(0, pass_score.length - 1));
+                    return (summary.correctPercent >= target_score);
+                } else {
+                    target_score = parseInt(pass_score);
+                    return (summary.correctCount >= target_score);
+                }
+            }
+
+            //a parser for jump logic between activities
             Sandbox.prototype.parseJumpCondition = function (condition, correctCount, totalCount) {
                 var is_percent = false;
                 var targetNum = 0;

@@ -140,13 +140,19 @@ angular.module('LessonDemo.directives', [])
                         }
                         //return to the lesson page;
                         lessonUserdata.current_activity = undefined;
-                        //TODO: badges decide the condition
-                        if ((typeof lessonUserdata.summary.correctPercent != "undefined") &&
-                            (lessonUserdata.summary.correctPercent > 70)) {
-                            lessonUserdata.is_complete = true;
-                        } else if ((typeof lessonUserdata.summary.correctPercent == "undefined")) {
+                        //check if the student has completed the condition to complete the lesson
+                        if ((typeof lessonUserdata.summary.correctPercent == "undefined")) {
                             lessonUserdata.summary.correctPercent = 100;
                             lessonUserdata.is_complete = true;
+                        } else {
+                            if (typeof lessonData.pass_score != "undefined") {
+                                if (lessonSandbox.parseCompleteCondition(lessonData.pass_score, lessonUserdata.summary)) {
+                                    lessonUserdata.is_complete = true;
+                                }
+                                ;
+                            } else {
+                                lessonUserdata.is_complete = true;
+                            }
                         }
 
                         if (args.should_transition) {
@@ -183,13 +189,18 @@ angular.module('LessonDemo.directives', [])
                             } else {
                                 //return to the lesson page;
                                 lessonUserdata.current_activity = undefined;
-                                //TODO: badges decide the condition
-                                if ((typeof lessonUserdata.summary.correctPercent != "undefined") &&
-                                    (lessonUserdata.summary.correctPercent > 70)) {
-                                    lessonUserdata.is_complete = true;
-                                } else if ((typeof lessonUserdata.summary.correctPercent == "undefined")) {
+                                //check if the student has completed the condition to complete the lesson
+                                if ((typeof lessonUserdata.summary.correctPercent == "undefined")) {
                                     lessonUserdata.summary.correctPercent = 100;
                                     lessonUserdata.is_complete = true;
+                                } else {
+                                    if (typeof lessonData.pass_score != "undefined") {
+                                        if (lessonSandbox.parseCompleteCondition(lessonData.pass_score, lessonUserdata.summary)) {
+                                            lessonUserdata.is_complete = true;
+                                        }
+                                    } else {
+                                        lessonUserdata.is_complete = true;
+                                    }
                                 }
                                 console.log(lessonUserdata);
                                 if (args.should_transition) {
