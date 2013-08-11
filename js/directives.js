@@ -8,7 +8,7 @@
 
 angular.module('LessonDemo.directives', [])
 
-    .directive("chapter", function (SandboxProvider, $routeParams, $filter) {
+    .directive("chapter", function (SandboxProvider, $routeParams) {
 
         //create the chapter sandbox
         var chapterSandbox = SandboxProvider.getSandbox();
@@ -17,20 +17,41 @@ angular.module('LessonDemo.directives', [])
             restrict: "E",
             link: function ($scope, $element) {
                 var chapterData = chapterSandbox.getChapterMaterial($routeParams.cid);
-                var chapterUserdata = chapterSandbox.getChapterUserdata();
+                //var chapterUserdata = chapterSandbox.getChapterUserdata();
 
                 $scope.lessons = chapterData.lessons;
-                $scope.stateMessage = function (lesson) {
-                    if (chapterSandbox.shouldLoadLesson(lesson, chapterUserdata.lessons)) {
-                        return "未载入";
+                var lessonState = {};
+                for (var i = 0; i < chapterData.lessons.length; i++) {
+                    lessonState[chapterData.lessons[i].id] = false;
+                }
+                angular.forEach(chapterData.lessons, function (lesson, index) {
+                    chapterSandbox.getLessonUserdata(lesson.id)
+                        .then(function (userdata) {
+                            if (userdata.is_complete) {
+                                lessonState[lesson.id] = true;
+                            }
+                        });
+                })
+                $scope.loadLesson = function (lesson) {
+                    if (typeof lesson.requirements == 'undefined') {
+                        return true;
                     } else {
-                        return "尚未开启本课程";
+                        for (var i = 0; i < lesson.requirements.length; i++) {
+                            if (!lessonState[lesson.requirements[i]]) {
+                                return false;
+                            }
+                        }
+                        return true;
                     }
                 }
-                //select lessons that have completed the requirements
-                $scope.selectLessons = $filter('filter')(chapterData.lessons, function (lesson) {
-                    return (chapterSandbox.shouldLoadLesson(lesson, chapterUserdata.lessons));
-                });
+
+                /*$scope.stateMessage = function (lesson) {
+                 if (chapterSandbox.shouldLoadLesson(lesson, chapterUserdata.lessons)) {
+                 return "未载入";
+                 } else {
+                 return "尚未开启本课程";
+                 }
+                 }*/
             }
         }
     })
@@ -355,7 +376,7 @@ angular.module('LessonDemo.directives', [])
                                     }
                                 } else {
                                     //do a page transition and show the next problem
-                                    PageTransitions.nextPage(24, $("#buttonContainer"));
+                                    PageTransitions.nextPage(10, $("#buttonContainer"));
                                 }
                             } else {
                                 //if the activity both shows snawers and shows summary, apply the same logic of the

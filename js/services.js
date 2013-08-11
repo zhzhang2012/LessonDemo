@@ -31,27 +31,29 @@ angular.module('LessonDemo.services', [])
             var deferred = $q.defer();
             var getLessonPromise = deferred.promise;
 
-            var promise = $http.jsonp("http://192.168.3.100:3000/lesson/" + lessonId + "?callback=JSON_CALLBACK");
-            //var promise = $http.get("data/" + lessonId + ".json");
+            //var promise = $http.jsonp("http://192.168.3.100:3000/lesson/" + lessonId + "?callback=JSON_CALLBACK");
+            var promise = $http.get("data/" + lessonId + ".json");
 
             promise.success(function (data) {
                 Material = data;
-                for (var j = 0; j < Material.activities.length; j++) {
-                    //if randomize problems, shuffle all the problems in all activities
-                    if ((typeof Material.activities[j].randomize_problems != "undefined") &&
-                        (Material.activities[j].randomize_problems)) {
-                        Material.activities[j].problems = _.shuffle(Material.activities[j].problems);
-                    }
-                    //if randomize choices, shuffle all the choices in all problems
-                    if ((typeof Material.activities[j].randomize_choices != "undefined") &&
-                        (Material.activities[j].randomize_choices)) {
-                        for (var k = 0; k < Material.activities[j].problems[k].choices.length; k++) {
-                            Material.activities[j].problems[k].choices = _.shuffle(Material.activities[j].problems[k].choices);
+                if (typeof materialMap[Material.id] == "undefined") {
+                    for (var j = 0; j < Material.activities.length; j++) {
+                        //if randomize problems, shuffle all the problems in all activities
+                        if ((typeof Material.activities[j].randomize_problems != "undefined") &&
+                            (Material.activities[j].randomize_problems)) {
+                            Material.activities[j].problems = _.shuffle(Material.activities[j].problems);
                         }
+                        //if randomize choices, shuffle all the choices in all problems
+                        if ((typeof Material.activities[j].randomize_choices != "undefined") &&
+                            (Material.activities[j].randomize_choices)) {
+                            for (var k = 0; k < Material.activities[j].problems[k].choices.length; k++) {
+                                Material.activities[j].problems[k].choices = _.shuffle(Material.activities[j].problems[k].choices);
+                            }
+                        }
+                        materialMap[Material.activities[j].id] = Material.activities[j];
                     }
-                    materialMap[Material.activities[j].id] = Material.activities[j];
+                    materialMap[Material.id] = Material;
                 }
-                materialMap[Material.id] = Material;
 
                 deferred.resolve(Material);
             })
@@ -122,12 +124,7 @@ angular.module('LessonDemo.services', [])
         var userdataMap = {};
 
         var getChapterUserdata = function () {
-            return {
-                lessons: {
-                    lesson1: {is_complete: true},
-                    lesson2: {is_complete: false}
-                }
-            }
+
         }
 
         var getLessonUserdata = function (lessonId) {
@@ -194,7 +191,7 @@ angular.module('LessonDemo.services', [])
                 } else {
                     return userdataMap[activityId];
                 }
-            } else if (activityData.type === "quiz") {
+            } else if ((activityData.type === "quiz") && (typeof userdataMap[activityData.problems[0].id] == "undefined")) {
                 for (var i = 0; i < activityData.problems.length; i++) {
                     userdataMap[activityId].problems[activityData.problems[i].id] = {
                         is_correct: false,
@@ -321,22 +318,6 @@ angular.module('LessonDemo.services', [])
             //a emitter for communications between modules
             Sandbox.prototype.sendEvent = function (eventName, scope, args) {
                 LessonService.emitEvent(eventName, scope, args);
-            }
-
-            //check if the lesson should be loaded according to the requiremwnts
-            Sandbox.prototype.shouldLoadLesson = function (lesson, lessonsUserdata) {
-                //the lesson is the opening lesson with no requirements
-                if (typeof lesson.requirements == 'undefined') {
-                    return true;
-                } else {
-                    //check if the students have finished all the requirements
-                    for (var i = 0; i < lesson.requirements.length; i++) {
-                        if (!lessonsUserdata[lesson.requirements[i]].is_complete) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }
             }
 
             //a parser for lesson complete logic

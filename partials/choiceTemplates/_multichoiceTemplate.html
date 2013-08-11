@@ -1,7 +1,7 @@
 <div id='problem{{$index}}'>
     <div>
         <span>题目：{{ problem.title }}</span><br>
-        <span>题干：{{ problem.body }}</span>
+        <span>题干：{{ problem.body }}</span><br><br>
         <button ng-show="showHintButton" ng-click="showHint()">显示暗示</button>
         <span ng-show="showHintBox">{{ hint }}</span>
 
