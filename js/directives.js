@@ -443,6 +443,9 @@ angular.module('LessonDemo.directives', [])
 
                 //init ng-models
                 $scope.answer = {};
+                if (problemUserdata.answer.length > 0) {
+                    $scope.submitted = true;
+                }
                 if ((typeof parentActivityData.show_answer !== "undefined") && (parentActivityData.show_answer)) {
                     $scope.explanation = currProblem.explanation;
                 }
@@ -456,6 +459,9 @@ angular.module('LessonDemo.directives', [])
 
                 //when the student complete the problem
                 $scope.submitAnswer = function () {
+                    //disable the choices inputs
+                    $scope.submitted = true;
+
                     if ($scope.answer !== null) {
                         //multi-choice question grader
                         if (currProblem.type === "multichoice") {

@@ -7,7 +7,7 @@
         <label for='problem{{$parent.$index}}'>
             <input type='text' id='problem{{$parent.$index}}'
                    name='choices_{{problem.id}}'
-                   ng-model='answer[problem.id]'>
+                   ng-model='answer[problem.id]' ng-disabled="$parent.submitted">
         </label>
     </div>
     <p>

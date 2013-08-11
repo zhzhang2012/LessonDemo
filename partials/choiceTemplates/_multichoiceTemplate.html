@@ -8,7 +8,7 @@
         <div ng-repeat='choice in problem.choices' choices>
             <label for='problem{{$parent.$index}}_choice{{$index}}' ng-click='chooseOption(choice.id)'><input
                     type='checkbox' id='problem{{$parent.$index}}_choice{{$index}}' name='choices_{{problem.id}}'
-                    ng-model='$parent.answer[choice.id]'>{{choice.body}}</label>
+                    ng-model='$parent.answer[choice.id]' ng-disabled="$parent.submitted">{{choice.body}}</label>
         </div>
     </div>
     <p>

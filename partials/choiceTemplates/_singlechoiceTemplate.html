@@ -8,7 +8,7 @@
         <div ng-repeat='choice in problem.choices' choices>
             <label for='problem{{$parent.$index}}_choice{{$index}}' ng-click='chooseOption(choice.id)'><input
                     type='radio' id='problem{{$parent.$index}}_choice{{$index}}' name='choices_{{problem.id}}'
-                    value='{{ choice.id }}' ng-model='$parent.answer[problem.id]'>{{choice.body}}</label>
+                    value='{{ choice.id }}' ng-model='$parent.answer[problem.id]' ng-disabled="$parent.submitted">{{choice.body}}</label>
         </div>
     </div>
     <p>
