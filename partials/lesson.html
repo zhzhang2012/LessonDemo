@@ -1,5 +1,7 @@
 <div>
-    <button ng-click="showLessonDialogue()">{{ title }}</button>
+    <div style="width:200px;height:40px;background-color: #f0f0f0;border: 1px #a0a0a0 solid;text-align: center;color:black;margin-top:30px;"
+         ng-click="showLessonDialogue()">{{ title }}
+    </div>
     <div ng-show="lessonDialogue"
          style="width:500px;height:300px;top:30%;left:30%;position:absolute;background-color: white;color:black">
         <div ng-show="startLesson">

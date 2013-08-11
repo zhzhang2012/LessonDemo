@@ -8,7 +8,7 @@
 
 angular.module('LessonDemo.directives', [])
 
-    .directive("chapter", function (SandboxProvider, $routeParams) {
+    .directive("chapter", function (SandboxProvider, $routeParams, $filter) {
 
         //create the chapter sandbox
         var chapterSandbox = SandboxProvider.getSandbox();
@@ -17,9 +17,20 @@ angular.module('LessonDemo.directives', [])
             restrict: "E",
             link: function ($scope, $element) {
                 var chapterData = chapterSandbox.getChapterMaterial($routeParams.cid);
-                //var chapterUserdata = chapterSandbox.getUserdata();
+                var chapterUserdata = chapterSandbox.getChapterUserdata();
 
                 $scope.lessons = chapterData.lessons;
+                $scope.stateMessage = function (lesson) {
+                    if (chapterSandbox.shouldLoadLesson(lesson, chapterUserdata.lessons)) {
+                        return "未载入";
+                    } else {
+                        return "尚未开启本课程";
+                    }
+                }
+                //select lessons that have completed the requirements
+                $scope.selectLessons = $filter('filter')(chapterData.lessons, function (lesson) {
+                    return (chapterSandbox.shouldLoadLesson(lesson, chapterUserdata.lessons));
+                });
             }
         }
     })
@@ -149,13 +160,24 @@ angular.module('LessonDemo.directives', [])
                                 if (lessonSandbox.parseCompleteCondition(lessonData.pass_score, lessonUserdata.summary)) {
                                     lessonUserdata.is_complete = true;
                                 }
-                                ;
                             } else {
                                 lessonUserdata.is_complete = true;
                             }
                         }
 
                         if (args.should_transition) {
+                            //give student badges if qualified
+                            if ((typeof lessonData.badges != "undefined") &&
+                                (typeof lessonUserdata.summary.correctCount != "undefined")) {
+                                for (var i = 0; i < lessonData.badges.length; i++) {
+                                    var badge = lessonData.badges[i].split(':');
+                                    if (lessonSandbox.conditionParser(badge[1], lessonUserdata.summary.correctCount,
+                                        lessonUserdata.summary.correctPercent)) {
+                                        lessonUserdata.summary.badges.push(badge[0]);
+                                    }
+                                }
+                            }
+
                             FSM.back();
                         }
                     })
@@ -204,6 +226,18 @@ angular.module('LessonDemo.directives', [])
                                 }
                                 console.log(lessonUserdata);
                                 if (args.should_transition) {
+                                    //give student badges if qualified
+                                    if ((typeof lessonData.badges != "undefined") &&
+                                        (typeof lessonUserdata.summary.correctCount != "undefined")) {
+                                        for (var i = 0; i < lessonData.badges.length; i++) {
+                                            var badge = lessonData.badges[i].split(':');
+                                            if (lessonSandbox.conditionParser(badge[1], lessonUserdata.summary.correctCount,
+                                                lessonUserdata.summary.correctPercent)) {
+                                                lessonUserdata.summary.badges.push(badge[0]);
+                                            }
+                                        }
+                                    }
+
                                     FSM.back();
                                 }
                             }
@@ -377,7 +411,7 @@ angular.module('LessonDemo.directives', [])
             link: function ($scope, $element) {
                 var currProblem = $scope.problem;
                 var problemUserdata = problemSandbox.getUserdata(currProblem.id);
-                var parentActivityData = problemSandbox.getActivityData(currProblem.parent_id);
+                var parentActivityData = problemSandbox.getParentActivityData(currProblem.parent_id);
 
                 //render dynamic templateUrl
                 var templateUrl = 'partials/choiceTemplates/_' + currProblem.type + 'Template.html';

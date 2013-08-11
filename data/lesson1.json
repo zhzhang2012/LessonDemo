@@ -9,6 +9,8 @@
     "level": "easy",
     "pass_score": "50%",
     "badges": [
+        "golden_lesson:>=4",
+        "silver_lesson:>60%",
         "bronze_lesson:>50%"
     ],
     "activities": [

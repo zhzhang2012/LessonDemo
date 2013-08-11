@@ -16,10 +16,13 @@ angular.module('LessonDemo.services', [])
             return {
                 "lessons": [
                     {
-                        "id": "lesson1"
+                        "id": "lesson1",
+                        "title": "走一步，再走一步"
                     },
                     {
-                        "id": "lesson2"
+                        "id": "lesson2",
+                        "title": "又走一步，摔死了",
+                        "requirements": ['lesson1']
                     }
                 ]}
         }
@@ -28,8 +31,8 @@ angular.module('LessonDemo.services', [])
             var deferred = $q.defer();
             var getLessonPromise = deferred.promise;
 
-            //var promise = $http.jsonp("http://192.168.3.100:3000/lesson/" + lessonId + "?callback=JSON_CALLBACK");
-            var promise = $http.get("data/" + lessonId + ".json");
+            var promise = $http.jsonp("http://192.168.3.100:3000/lesson/" + lessonId + "?callback=JSON_CALLBACK");
+            //var promise = $http.get("data/" + lessonId + ".json");
 
             promise.success(function (data) {
                 Material = data;
@@ -118,6 +121,15 @@ angular.module('LessonDemo.services', [])
         var USERDATA = {};
         var userdataMap = {};
 
+        var getChapterUserdata = function () {
+            return {
+                lessons: {
+                    lesson1: {is_complete: true},
+                    lesson2: {is_complete: false}
+                }
+            }
+        }
+
         var getLessonUserdata = function (lessonId) {
             var deferred = $q.defer();
             var lessonPromise = deferred.promise;
@@ -126,7 +138,7 @@ angular.module('LessonDemo.services', [])
                 USERDATA[lessonId] = {
                     is_complete: false,
                     activities: {},
-                    summary: {}
+                    summary: { badges: [] }
                 };
                 userdataMap[lessonId] = USERDATA[lessonId];
 
@@ -210,7 +222,7 @@ angular.module('LessonDemo.services', [])
                 userdataMap[moduleId] = {
                     is_complete: true,
                     problems: {},
-                    summary: {}
+                    summary: { badges: [] }
                 };
                 userdataMap[activityData.parent_id].activities[moduleId] = userdataMap[moduleId];
 
@@ -233,6 +245,7 @@ angular.module('LessonDemo.services', [])
         }
 
         return{
+            getChapterUserdata: getChapterUserdata,
             getLessonUserdata: getLessonUserdata,
             getActivityUserdata: getActivityUserdata,
             getUserdata: getUserdata,
@@ -268,6 +281,10 @@ angular.module('LessonDemo.services', [])
                 return MaterialProvider.getActivityMaterial(activityId, seed);
             }
 
+            Sandbox.prototype.getChapterUserdata = function () {
+                return UserdataProvider.getChapterUserdata();
+            }
+
             Sandbox.prototype.getLessonUserdata = function (lessonId) {
                 return UserdataProvider.getLessonUserdata(lessonId);
             }
@@ -284,11 +301,7 @@ angular.module('LessonDemo.services', [])
                 return UserdataProvider.resetUserdata(moduleName, moduleId);
             }
 
-            Sandbox.prototype.sendEvent = function (eventName, scope, args) {
-                LessonService.emitEvent(eventName, scope, args);
-            }
-
-            Sandbox.prototype.getLessonData = function (moduleName, parentId) {
+            Sandbox.prototype.getParentLessonData = function (moduleName, parentId) {
 
                 if (moduleName === "activity") {
                     MaterialProvider.getMaterial(parentId);
@@ -301,8 +314,29 @@ angular.module('LessonDemo.services', [])
                 }
             }
 
-            Sandbox.prototype.getActivityData = function (parentId) {
+            Sandbox.prototype.getParentActivityData = function (parentId) {
                 return MaterialProvider.getMaterial(parentId);
+            }
+
+            //a emitter for communications between modules
+            Sandbox.prototype.sendEvent = function (eventName, scope, args) {
+                LessonService.emitEvent(eventName, scope, args);
+            }
+
+            //check if the lesson should be loaded according to the requiremwnts
+            Sandbox.prototype.shouldLoadLesson = function (lesson, lessonsUserdata) {
+                //the lesson is the opening lesson with no requirements
+                if (typeof lesson.requirements == 'undefined') {
+                    return true;
+                } else {
+                    //check if the students have finished all the requirements
+                    for (var i = 0; i < lesson.requirements.length; i++) {
+                        if (!lessonsUserdata[lesson.requirements[i]].is_complete) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
             }
 
             //a parser for lesson complete logic
@@ -317,13 +351,13 @@ angular.module('LessonDemo.services', [])
                 }
             }
 
-            //a parser for jump logic between activities
-            Sandbox.prototype.parseJumpCondition = function (condition, correctCount, totalCount) {
+            //1. a parser for jump logic between activities
+            //2. a parser to determine if the student can get certain badge
+            Sandbox.prototype.conditionParser = function (condition, correctCount, correctPercent) {
                 var is_percent = false;
                 var targetNum = 0;
 
                 if (condition.slice(condition.length - 1) === "%") {
-                    var correctPercent = parseInt((correctCount * 100) / totalCount);
                     is_percent = true;
                 }
 
@@ -366,10 +400,11 @@ angular.module('LessonDemo.services', [])
                     var jump = [];
                     for (var i = 0; i < activityData.jump.length; i++) {
                         jump = activityData.jump[i].split(':');
+                        var correctPercent = parseInt((correctCount * 100) / activityData.problems.length);
                         if (((jump[0] === "end_of_lesson_if_correctness") &&
-                            (this.parseJumpCondition(jump[1], correctCount, activityData.problems.length))) ||
+                            (this.conditionParser(jump[1], correctCount, correctPercent))) ||
                             ((jump[0] === "to_activity_if_correctness") &&
-                                (this.parseJumpCondition(jump[2], correctCount, activityData.problems.length))) ||
+                                (this.conditionParser(jump[2], correctCount, correctPercent))) ||
                             (jump[0] === "force_to_activity")) {
                             break;
                         }
