@@ -117,6 +117,11 @@ angular.module('LessonDemo.directives', [])
                     $scope.title = lessonData.title;
                     $scope.summary = lessonData.summary;
                     $scope.activities = lessonData.activities;
+                    if (lessonUserdata.is_complete) {
+                        $scope.showResult = true;
+                        $scope.lessonResultCount = lessonUserdata.summary.correctCount;
+                        $scope.lessonResultPercent = lessonUserdata.summary.correctPercent;
+                    }
                     if (typeof lessonUserdata.current_activity === "undefined") {
                         $scope.buttonMsg = "开始学习";
                     } else {
