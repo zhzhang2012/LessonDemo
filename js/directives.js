@@ -418,8 +418,21 @@ angular.module('LessonDemo.directives', [])
         }
     })
 
+    .directive("jpg", function ($compile, $routeParams) {
+        return {
+            restrict: "E",
+            link: function ($scope, $element, $attrs) {
+                var template = "<img style='width:300px;' src='http://192.168.3.100:3000/exercise/v1/lesson/" + $routeParams.lid + "/"
+                    + $attrs.src + " />";
+                $element.html(template);
+                $compile($element.contents())($scope);
+            }
+        }
+    })
+
     //the outsider of problem directive used for getting the problem DOM collection
-    .directive("switch", function ($timeout) {
+    .
+    directive("switch", function ($timeout) {
         return {
             link: function ($scope, $element) {
                 $timeout(function () {

@@ -20,7 +20,7 @@
             "title": "字词讲解第一部分",
             "type": "lecture",
             "redoable": true,
-            "body": "走一步，再走一步字词讲解<vid src='走一步，再走一步-1.mov'></vid>",
+            "body": "走一步，再走一步字词讲解<jpg src='test.jpg'></jpg><vid src='走一步，再走一步-1.mp4'></vid>",
             "level": "easy",
             "badges": [
                 "complete_video"

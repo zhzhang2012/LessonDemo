@@ -7,7 +7,8 @@
                 <span ng-bind-html-unsafe="body"></span>
             </div>
             <div style="font-size:25px;text-align:center;" switch ng-hide="showQuizSummary">
-                <problem id="{{ problem.id }}" class="pt-page pt-page-{{ $index+1 }}" ng-repeat='problem in problems'
+                <problem ng-init="total=problems.length" id="{{ problem.id }}" class="pt-page pt-page-{{ $index+1 }}"
+                         ng-repeat='problem in problems'
                          ng-model="problemShow"
                          activity=true></problem>
             </div>

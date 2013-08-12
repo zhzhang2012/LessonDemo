@@ -1,5 +1,6 @@
 <div id='problem{{$index}}'>
     <div>
+        <span>第&nbsp;{{ $index+1 }}&nbsp;题&nbsp;/&nbsp;共&nbsp;{{ total }}&nbsp;题&nbsp;{{ problem.parent_id }}</span><br>
         <span>题目：{{ problem.title }}</span><br>
         <span>题干：{{ problem.body }}</span><br><br>
         <button ng-show="showHintButton" ng-click="showHint()">显示暗示</button>
