@@ -423,6 +423,18 @@ angular.module('LessonDemo.directives', [])
         }
     })
 
+    .directive("music", function ($compile, $routeParams) {
+        return {
+            restrict: "E",
+            link: function ($scope, $element, $attrs) {
+                var template = "<audio style='width:500px;' src='http://192.168.3.100:3000/exercise/v1/lesson/" + $routeParams.lid + "/"
+                    + $attrs.src + "' controls></audio>";
+                $element.html(template);
+                $compile($element.contents())($scope);
+            }
+        }
+    })
+
     .directive("jpg", function ($compile, $routeParams) {
         return {
             restrict: "E",
