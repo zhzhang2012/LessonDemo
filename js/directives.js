@@ -45,13 +45,6 @@ angular.module('LessonDemo.directives', [])
                     }
                 }
 
-                /*$scope.stateMessage = function (lesson) {
-                 if (chapterSandbox.shouldLoadLesson(lesson, chapterUserdata.lessons)) {
-                 return "未载入";
-                 } else {
-                 return "尚未开启本课程";
-                 }
-                 }*/
             }
         }
     })
