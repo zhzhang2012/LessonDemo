@@ -59,7 +59,7 @@ angular.module('LessonDemo.directives', [])
 
     //lesson module
     .directive("lesson", function (SandboxProvider, $location, $routeParams, $http, $q, $templateCache, $compile) {
-
+        //console.log('hit');
         //create the lesson sandbox
         var lessonSandbox = SandboxProvider.getSandbox();
 

@@ -132,6 +132,7 @@ angular.module('LessonDemo.services', [])
             var lessonPromise = deferred.promise;
 
             if (typeof USERDATA[lessonId] == "undefined") {
+                console.log('hit2');
                 USERDATA[lessonId] = {
                     is_complete: false,
                     activities: {},
@@ -213,23 +214,31 @@ angular.module('LessonDemo.services', [])
 
         var resetUserdata = function (moduleName, moduleId) {
             if (moduleName === "lesson") {
-                this.getLessonUserdata(moduleId);
+                var promise = this.getLessonUserdata(moduleId);
+                promise.then(function (lessonUserdata) {
+                    return lessonUserdata;
+                })
             } else if (moduleName === "activity") {
                 var activityData = MaterialProvider.getMaterial(moduleId);
                 userdataMap[moduleId] = {
                     is_complete: true,
-                    problems: {},
                     summary: { badges: [] }
                 };
                 userdataMap[activityData.parent_id].activities[moduleId] = userdataMap[moduleId];
 
-                for (var i = 0; i < activityData.problems.length; i++) {
-                    userdataMap[moduleId].problems[activityData.problems[i].id] = {
-                        is_correct: false,
-                        answer: []
+                if (activityData.type === 'quiz') {
+                    userdataMap[moduleId].problems = {};
+                    if (typeof activityData.pool_count != "undefined") {
+                        userdataMap[moduleId].seed = [];
                     }
-                    userdataMap[activityData.problems[i].id] = userdataMap[moduleId].
-                        problems[activityData.problems[i].id];
+                    for (var i = 0; i < activityData.problems.length; i++) {
+                        userdataMap[moduleId].problems[activityData.problems[i].id] = {
+                            is_correct: false,
+                            answer: []
+                        }
+                        userdataMap[activityData.problems[i].id] = userdataMap[moduleId].
+                            problems[activityData.problems[i].id];
+                    }
                 }
                 return userdataMap[moduleId];
             } else {
