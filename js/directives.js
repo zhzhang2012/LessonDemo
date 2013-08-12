@@ -16,35 +16,36 @@ angular.module('LessonDemo.directives', [])
         return {
             restrict: "E",
             link: function ($scope, $element) {
-                var chapterData = chapterSandbox.getChapterMaterial($routeParams.cid);
+                var chapterDataPromise = chapterSandbox.getChapterMaterial($routeParams.cid);
                 //var chapterUserdata = chapterSandbox.getChapterUserdata();
 
-                $scope.lessons = chapterData.lessons;
-                var lessonState = {};
-                for (var i = 0; i < chapterData.lessons.length; i++) {
-                    lessonState[chapterData.lessons[i].id] = false;
-                }
-                angular.forEach(chapterData.lessons, function (lesson, index) {
-                    chapterSandbox.getLessonUserdata(lesson.id)
-                        .then(function (userdata) {
-                            if (userdata.is_complete) {
-                                lessonState[lesson.id] = true;
-                            }
-                        });
-                })
-                $scope.loadLesson = function (lesson) {
-                    if (typeof lesson.requirements == 'undefined') {
-                        return true;
-                    } else {
-                        for (var i = 0; i < lesson.requirements.length; i++) {
-                            if (!lessonState[lesson.requirements[i]]) {
-                                return false;
-                            }
-                        }
-                        return true;
+                chapterDataPromise.then(function (chapterData) {
+                    $scope.lessons = chapterData.lessons;
+                    var lessonState = {};
+                    for (var i = 0; i < chapterData.lessons.length; i++) {
+                        lessonState[chapterData.lessons[i].id] = false;
                     }
-                }
-
+                    angular.forEach(chapterData.lessons, function (lesson, index) {
+                        chapterSandbox.getLessonUserdata(lesson.id)
+                            .then(function (userdata) {
+                                if (userdata.is_complete) {
+                                    lessonState[lesson.id] = true;
+                                }
+                            });
+                    })
+                    $scope.loadLesson = function (lesson) {
+                        if (typeof lesson.requirements == 'undefined') {
+                            return true;
+                        } else {
+                            for (var i = 0; i < lesson.requirements.length; i++) {
+                                if (!lessonState[lesson.requirements[i]]) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
+                    }
+                })
             }
         }
     })
@@ -272,7 +273,7 @@ angular.module('LessonDemo.directives', [])
 
 
     //activity module
-    .directive("activity", function (SandboxProvider, $routeParams) {
+    .directive("activity", function (SandboxProvider, $routeParams, $compile) {
 
         //create the activity sandbox
         var activitySandbox = SandboxProvider.getSandbox();
@@ -284,7 +285,9 @@ angular.module('LessonDemo.directives', [])
                 var activityData = activitySandbox.getActivityMaterial($routeParams.aid, activityUserdata.seed);
 
                 $scope.title = activityData.title;
-                $scope.body = activityData.body;
+                var multimediaBody = "<div>" + activityData.body + "</div>";
+                $scope.body = $compile(multimediaBody)($scope);
+                $scope.activityId = activityData.id;
 
                 //find the previous problem which the student has entered
                 if (activityData.type === 'quiz') {
@@ -399,6 +402,18 @@ angular.module('LessonDemo.directives', [])
                         }
                     }
                 }
+            }
+        }
+    })
+
+    .directive("vid", function ($compile, $routeParams) {
+        return {
+            restrict: "E",
+            link: function ($scope, $element, $attrs) {
+                var template = "<video style='width:500px;' src='http://192.168.3.100:3000/exercise/v1/lesson/" + $routeParams.lid + "/"
+                    + $attrs.src + "' controls></video>";
+                $element.html(template);
+                $compile($element.contents())($scope);
             }
         }
     })

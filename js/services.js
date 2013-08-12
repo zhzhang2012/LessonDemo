@@ -13,25 +13,26 @@ angular.module('LessonDemo.services', [])
         var materialMap = {};
 
         var getChapterMaterial = function (chapterId) {
-            return {
-                "lessons": [
-                    {
-                        "id": "lesson1",
-                        "title": "走一步，再走一步"
-                    },
-                    {
-                        "id": "lesson2",
-                        "title": "又走一步，摔死了",
-                        "requirements": ['lesson1']
-                    }
-                ]}
+            var deferred = $q.defer();
+            var getChapterPromise = deferred.promise;
+
+            var promise = $http.jsonp("http://192.168.3.100:3000/exercise/v1/chapter/" + chapterId + "?callback=JSON_CALLBACK");
+            //var promise = $http.get("data/" + chapterId + ".json");
+            promise.success(function (data) {
+                deferred.resolve(data);
+            })
+            promise.error(function (data, err) {
+                console.log("Load Chapter Data Error: " + err);
+            })
+
+            return getChapterPromise;
         }
 
         var getLessonMaterial = function (lessonId) {
             var deferred = $q.defer();
             var getLessonPromise = deferred.promise;
 
-            //var promise = $http.jsonp("http://192.168.3.100:3000/lesson/" + lessonId + "?callback=JSON_CALLBACK");
+            //var promise = $http.jsonp("http://192.168.3.100:3000/exercise/v1/lesson/" + lessonId + ".json?callback=JSON_CALLBACK");
             var promise = $http.get("data/" + lessonId + ".json");
 
             promise.success(function (data) {
@@ -132,7 +133,6 @@ angular.module('LessonDemo.services', [])
             var lessonPromise = deferred.promise;
 
             if (typeof USERDATA[lessonId] == "undefined") {
-                console.log('hit2');
                 USERDATA[lessonId] = {
                     is_complete: false,
                     activities: {},
