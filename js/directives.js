@@ -121,6 +121,12 @@ angular.module('LessonDemo.directives', [])
                         $scope.showResult = true;
                         $scope.lessonResultCount = lessonUserdata.summary.correctCount;
                         $scope.lessonResultPercent = lessonUserdata.summary.correctPercent;
+                        if (typeof lessonUserdata.summary.star != "undefined") {
+                            $scope.hasStar = true;
+                            $scope.lessonStar = (lessonUserdata.summary.star == 1) ? "金牌" :
+                                ((lessonUserdata.summary.star == 2) ? "银牌" :
+                                    ((lessonUserdata.summary == 3) ? "铜牌" : null));
+                        }
                     }
                     if (typeof lessonUserdata.current_activity === "undefined") {
                         $scope.buttonMsg = "开始学习";
@@ -187,14 +193,13 @@ angular.module('LessonDemo.directives', [])
 
                         if (args.should_transition) {
                             //give student badges if qualified
-                            if ((typeof lessonData.badges != "undefined") &&
-                                (typeof lessonUserdata.summary.correctCount != "undefined")) {
-                                for (var i = 0; i < lessonData.badges.length; i++) {
-                                    var badge = lessonData.badges[i].split(':');
-                                    if (lessonSandbox.conditionParser(badge[1], lessonUserdata.summary.correctCount,
-                                        lessonUserdata.summary.correctPercent)) {
-                                        lessonUserdata.summary.badges.push(badge[0]);
-                                    }
+                            if (typeof lessonUserdata.summary.correctPercent != "undefined") {
+                                if (lessonUserdata.summary.correctPercent >= lessonData.star1) {
+                                    lessonUserdata.summary.star = 1;
+                                } else if (lessonUserdata.summary.correctPercent >= lessonData.star2) {
+                                    lessonUserdata.summary.star = 2;
+                                } else if (lessonUserdata.summary.correctPercent >= lessonData.star3) {
+                                    lessonUserdata.summary.star = 3;
                                 }
                             }
 
@@ -244,20 +249,19 @@ angular.module('LessonDemo.directives', [])
                                         lessonUserdata.is_complete = true;
                                     }
                                 }
-                                console.log(lessonUserdata);
+
                                 if (args.should_transition) {
                                     //give student badges if qualified
-                                    if ((typeof lessonData.badges != "undefined") &&
-                                        (typeof lessonUserdata.summary.correctCount != "undefined")) {
-                                        for (var i = 0; i < lessonData.badges.length; i++) {
-                                            var badge = lessonData.badges[i].split(':');
-                                            if (lessonSandbox.conditionParser(badge[1], lessonUserdata.summary.correctCount,
-                                                lessonUserdata.summary.correctPercent)) {
-                                                lessonUserdata.summary.badges.push(badge[0]);
-                                            }
+                                    if (typeof lessonUserdata.summary.correctPercent != "undefined") {
+                                        if (lessonUserdata.summary.correctPercent >= lessonData.star1) {
+                                            lessonUserdata.summary.star = 1;
+                                        } else if (lessonUserdata.summary.correctPercent >= lessonData.star2) {
+                                            lessonUserdata.summary.star = 2;
+                                        } else if (lessonUserdata.summary.correctPercent >= lessonData.star3) {
+                                            lessonUserdata.summary.star = 3;
                                         }
                                     }
-
+                                    console.log(lessonUserdata);
                                     FSM.back();
                                 }
                             }

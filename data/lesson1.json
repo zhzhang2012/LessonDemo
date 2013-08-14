@@ -8,10 +8,10 @@
     "intended_audience": ["宝宝们"],
     "level": "easy",
     "pass_score": "50%",
+    "star1": 80,
+    "star2": 60,
+    "star3": 50,
     "badges": [
-        "golden_lesson:>=4",
-        "silver_lesson:>60%",
-        "bronze_lesson:>50%"
     ],
     "activities": [
         {
@@ -36,7 +36,7 @@
             "redoable": true,
             "jump": ["to_activity_if_correctness:activity4:>60%"],
             "level": "easy",
-            "badges": [
+            "achievements": [
                 "excellent_quiz:=3",
                 "good_quiz:>=2"
             ],
