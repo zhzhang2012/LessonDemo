@@ -8,9 +8,9 @@
     "intended_audience": ["宝宝们"],
     "level": "easy",
     "pass_score": "50%",
-    "star1": 80,
+    "star1": 50,
     "star2": 60,
-    "star3": 50,
+    "star3": 80,
     "badges": [
     ],
     "activities": [
@@ -22,8 +22,13 @@
             "redoable": true,
             "body": "走一步，再走一步字词讲解<jpg src='test.jpg'></jpg><vid src='走一步，再走一步-1.mp4'></vid>",
             "level": "easy",
-            "badges": [
-                "complete_video"
+            "achievements": [
+                {
+                    "id": "lecture_finish",
+                    "type": "badge",
+                    "title": "认真听讲",
+                    "desc": "同学你很认真听讲啊！！！"
+                }
             ]
         },
         {
@@ -37,8 +42,19 @@
             "jump": ["to_activity_if_correctness:activity4:>60%"],
             "level": "easy",
             "achievements": [
-                "excellent_quiz:=3",
-                "good_quiz:>=2"
+                {
+                    "id": "practice_finish",
+                    "type": "badge",
+                    "title": "边学边练",
+                    "desc": "同学你练的很happy呀！！！"
+                },
+                {
+                    "id": "practice_all_correct",
+                    "type": "badge",
+                    "title": "一听就懂",
+                    "condition": [100],
+                    "desc": "同学你很机灵啊！！！"
+                }
             ],
             "problems": [
                 {
@@ -141,8 +157,13 @@
             "redoable": true,
             "body": "走一步，再走一步字词讲解<video src='走一步，再走一步-2.mp4'></video>",
             "level": "easy",
-            "badges": [
-                "complete_video"
+            "achievements": [
+                {
+                    "id": "lecture_finish",
+                    "type": "badge",
+                    "title": "认真听讲",
+                    "desc": "同学你很认真听讲啊！！！"
+                }
             ]
         },
         {
@@ -158,9 +179,14 @@
                 "force_to_activity:activity6"
             ],
             "level": "easy",
-            "badges": [
-                "excellent_quiz:=3",
-                "good_quiz:>=2"
+            "achievements": [
+                {
+                    "id": "practice_fast_and_correct",
+                    "type": "badge",
+                    "title": "又快又准",
+                    "condition": [100, "", 10],
+                    "desc": "同学你很牛逼啊！！！"
+                }
             ],
             "problems": [
                 {
@@ -264,7 +290,7 @@
             "body": "走一步，再走一步字词巩固<pdf src='走一步，再走一步-1.pdf'></pdf><pdf src='走一步，再走一步-2.pdf'></pdf>",
             "level": "normal",
             "badges": [
-                "complete_pdf"
+
             ]
         },
         {
@@ -279,9 +305,21 @@
             "show_answer": false,
             "show_summary": true,
             "level": "normal",
-            "badges": [
-                "excellent_quiz:=4",
-                "good_quiz:>=3"
+            "achievements": [
+                {
+                    "id": "final_quiz_failed",
+                    "type": "badge",
+                    "title": "老师在等你",
+                    "condition": [50, "", 8],
+                    "desc": "老师要找来了哟！！！"
+                },
+                {
+                    "id": "golden_cup",
+                    "type": "badge",
+                    "title": "独孤求败",
+                    "condition": [80],
+                    "desc": "我是老大我怕谁！！！"
+                }
             ],
             "problems": [
                 {

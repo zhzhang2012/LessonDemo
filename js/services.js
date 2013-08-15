@@ -53,7 +53,7 @@ angular.module('LessonDemo.services', [])
                     chapters: [
                         {
                             id: "chapter4",
-                            title: "求导"
+                            title: "导数"
                         },
                         {
                             id: "chapter5",
@@ -195,7 +195,31 @@ angular.module('LessonDemo.services', [])
     })
 
     .
-    factory("UserdataProvider", function (MaterialProvider, $q) {
+    factory("UserdataProvider", function (MaterialProvider, $q, $http) {
+
+        /*var deferred = $q.defer();
+         var userInfoPromise = deferred.promise;
+
+         var promise = $http.get("http://192.168.3.100/userinfo");
+         promise.success(function (data) {
+         UserInfo = data;
+         deferred.resolve(UserInfo);
+         });
+         promise.error(function (error) {
+         deferred.reject("An error occured when loading userInfo: " + error);
+         });
+
+         return userInfoPromise;*/
+
+        var UserInfo = {
+            user_name: "张三",
+            achievements: {}
+        };
+
+        var getUserInfo = function () {
+            return UserInfo;
+        }
+
         var USERDATA = {};
         var userdataMap = {};
 
@@ -326,6 +350,7 @@ angular.module('LessonDemo.services', [])
         }
 
         return{
+            getUserInfo: getUserInfo,
             getChapterUserdata: getChapterUserdata,
             getLessonUserdata: getLessonUserdata,
             getActivityUserdata: getActivityUserdata,
@@ -336,29 +361,51 @@ angular.module('LessonDemo.services', [])
     })
 
     .factory("GraderProvider", function ($http, $q) {
-        var graderCollection = {};
 
-        var getGrader = function (graderId) {
-            var deferred = $q.defer();
-            var graderPromise = deferred.promise;
-
-            if (typeof graderCollection[graderId] != "undefined") {
-                //find the grader that has already been loaded
-                deferred.resolve(new Function("correct_percentage", "correct_count", "duration_in_sec", graderCollection[graderId]));
-            } else {
-                $http.get("data/" + graderId + ".js").success(function (grader) {
-                    //write the current loaded grader into the graderCollection
-                    graderCollection[graderId] = grader;
-                    deferred.resolve(new Function("correct_percentage", "correct_count", "duration_in_sec", grader));
-                }).error(function (error) {
-                        deferred.reject("Cannot load grader resource: " + error);
-                    })
+        var graderCollection = {
+            lecture_finish: function () {
+                return function () {
+                    return true;
+                };
+            },
+            practice_finish: function () {
+                return function () {
+                    return true;
+                };
+            },
+            practice_all_correct: function (condition) {
+                return function (userData) {
+                    return (userData.correct_percent == condition[0]);
+                };
+            },
+            practice_fast_and_correct: function (condition) {
+                return function (userData) {
+                    return ((userData.correct_percent == condition[0]) && (userData.duration <= condition[2] * 1000));
+                }
+            },
+            golden_cup: function (condition) {
+                return function (userData) {
+                    return (userData.correct_percent >= condition[0]);
+                }
+            },
+            final_quiz_failed: function (condition) {
+                return function (userData) {
+                    return ((userData.correct_percent < condition[0]) && (userData.duration <= condition[2] * 1000));
+                }
             }
-            return graderPromise;
+        };
+
+        var getGrader = function (grader_id, condition) {
+            return graderCollection[grader_id](condition);
+        }
+
+        var graderFactory = function (graderFunc, userData) {
+            return graderFunc(userData);
         }
 
         return {
-            getGrader: getGrader
+            getGrader: getGrader,
+            graderFactory: graderFactory
         }
     })
 
@@ -395,6 +442,10 @@ angular.module('LessonDemo.services', [])
 
             Sandbox.prototype.getActivityMaterial = function (activityId, seed) {
                 return MaterialProvider.getActivityMaterial(activityId, seed);
+            }
+
+            Sandbox.prototype.getUserInfo = function () {
+                return UserdataProvider.getUserInfo();
             }
 
             Sandbox.prototype.getChapterUserdata = function () {
@@ -434,8 +485,12 @@ angular.module('LessonDemo.services', [])
                 return MaterialProvider.getMaterial(parentId);
             }
 
-            Sandbox.prototype.getGrader = function (graderId) {
-                return GraderProvider.getGrader(graderId);
+            Sandbox.prototype.getGrader = function (graderId, condition) {
+                return GraderProvider.getGrader(graderId, condition);
+            }
+
+            Sandbox.prototype.createGrader = function (graderFunc, userData) {
+                return GraderProvider.graderFactory(graderFunc, userData);
             }
 
             //a emitter for communications between modules

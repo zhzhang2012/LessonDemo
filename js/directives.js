@@ -279,17 +279,18 @@ angular.module('LessonDemo.directives', [])
                                     }
                                 }
 
-                                if (args.should_transition) {
-                                    //give student badges if qualified
-                                    if (typeof lessonUserdata.summary.correctPercent != "undefined") {
-                                        if (lessonUserdata.summary.correctPercent >= lessonData.star1) {
-                                            lessonUserdata.summary.star = 1;
-                                        } else if (lessonUserdata.summary.correctPercent >= lessonData.star2) {
-                                            lessonUserdata.summary.star = 2;
-                                        } else if (lessonUserdata.summary.correctPercent >= lessonData.star3) {
-                                            lessonUserdata.summary.star = 3;
-                                        }
+                                //give student badges if qualified
+                                if (typeof lessonUserdata.summary.correctPercent != "undefined") {
+                                    if (lessonUserdata.summary.correctPercent >= lessonData.star1) {
+                                        lessonUserdata.summary.star = 1;
+                                    } else if (lessonUserdata.summary.correctPercent >= lessonData.star2) {
+                                        lessonUserdata.summary.star = 2;
+                                    } else if (lessonUserdata.summary.correctPercent >= lessonData.star3) {
+                                        lessonUserdata.summary.star = 3;
                                     }
+                                }
+
+                                if (args.should_transition) {
                                     console.log(lessonUserdata);
                                     FSM.back();
                                 }
@@ -321,6 +322,9 @@ angular.module('LessonDemo.directives', [])
             link: function ($scope, $element) {
                 var activityUserdata = activitySandbox.getActivityUserdata($routeParams.aid);
                 var activityData = activitySandbox.getActivityMaterial($routeParams.aid, activityUserdata.seed);
+                var userInfo = activitySandbox.getUserInfo();
+
+                var startTime = Date.now();
 
                 $scope.title = activityData.title;
                 var multimediaBody = "<div>" + activityData.body + "</div>";
@@ -371,6 +375,13 @@ angular.module('LessonDemo.directives', [])
                                 //activity, this activity's userdata can be removed
                                 activityUserdata.is_complete = true;
 
+                                //record the duration the student spends to finish the activity
+                                var stopTime = Date.now();
+                                var duration = stopTime - startTime;
+                                if (typeof activityUserdata.duration == "undefined") {
+                                    activityUserdata.duration = duration;
+                                }
+
                                 //count the correct answer and update UserdataProvider
                                 var correctCount = 0;
                                 for (var k = 0; k < activityData.problems.length; k++) {
@@ -388,12 +399,33 @@ angular.module('LessonDemo.directives', [])
                                 }
 
                                 //achievements checking
-                                var graderPromise = activitySandbox.getGrader("Understand_Right_Away");
-                                graderPromise.then(function (graderFunction) {
-                                    graderFunction(activityUserdata.summary.correct_percent, activityUserdata.summary.correct_count, "");
-                                }, function (errorMsg) {
-                                    console.log(errorMsg);
-                                })
+                                if (typeof activityData.achievements != "undefined") {
+                                    var userDataToGrade = {
+                                        correct_count: activityUserdata.summary.correct_count,
+                                        correct_percent: activityUserdata.summary.correct_percent,
+                                        duration: activityUserdata.duration
+                                    };
+                                    for (var i = 0; i < activityData.achievements.length; i++) {
+                                        if (typeof userInfo.achievements[activityData.achievements[i].id] == "undefined") {
+                                            //create the custon grader using the grader template
+                                            if (typeof activityData.achievements[i].condition != "undefined") {
+                                                var grader = activitySandbox.getGrader(activityData.achievements[i].id,
+                                                    activityData.achievements[i].condition);
+                                            } else {
+                                                var grader = activitySandbox.getGrader(activityData.achievements[i].id, "");
+                                            }
+
+                                            //apply the userdata using the created grader
+                                            if (activitySandbox.createGrader(grader, userDataToGrade)) {
+                                                //write the new badge in
+                                                userInfo.achievements[activityData.achievements[i].id] = {
+                                                    id: activityData.achievements[i].id
+                                                }
+                                            }
+                                        }
+                                    }
+                                    console.log(userInfo);
+                                }
                             }
 
                             if (args.should_transition) {
@@ -438,6 +470,29 @@ angular.module('LessonDemo.directives', [])
                     //show the activity continue button
                     //and wait for this button to be clicked
                     $scope.continueActivity = function () {
+                        //check if the student achieves certain achievements
+                        if (typeof activityData.achievements != "undefined") {
+                            for (var i = 0; i < activityData.achievements.length; i++) {
+                                if (typeof userInfo.achievements[activityData.achievements[i].id] == "undefined") {
+                                    //create the custon grader using the grader template
+                                    if (typeof activityData.achievements[i].condition != "undefined") {
+                                        var grader = activitySandbox.getGrader(activityData.achievements[i].id,
+                                            activityData.achievements[i].condition);
+                                    } else {
+                                        var grader = activitySandbox.getGrader(activityData.achievements[i].id, "");
+                                    }
+
+                                    //apply the userdata using the created grader
+                                    if (activitySandbox.createGrader(grader, "")) {
+                                        //write the new badge in
+                                        userInfo.achievements[activityData.achievements[i].id] = {
+                                            id: activityData.achievements[i].id
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         if (typeof activityData.jump !== "undefined") {
                             var jump = activityData.jump.split(':');
                             if (jump[0] === 'force_to_activity') {
