@@ -260,6 +260,33 @@ angular.module('LessonDemo.services', [])
 
     })
 
+    .factory("GraderProvider", function ($http, $q) {
+        var graderCollection = {};
+
+        var getGrader = function (graderId) {
+            var deferred = $q.defer();
+            var graderPromise = deferred.promise;
+
+            if (typeof graderCollection[graderId] != "undefined") {
+                //find the grader that has already been loaded
+                deferred.resolve(new Function("correct_percentage", "correct_count", "duration_in_sec", graderCollection[graderId]));
+            } else {
+                $http.get("data/" + graderId + ".js").success(function (grader) {
+                    //write the current loaded grader into the graderCollection
+                    graderCollection[graderId] = grader;
+                    deferred.resolve(new Function("correct_percentage", "correct_count", "duration_in_sec", grader));
+                }).error(function (error) {
+                        deferred.reject("Cannot load grader resource: " + error);
+                    })
+            }
+            return graderPromise;
+        }
+
+        return {
+            getGrader: getGrader
+        }
+    })
+
     .factory("LessonService", function () {
 
         var emitEvent = function (eventName, scope, args) {
@@ -271,7 +298,7 @@ angular.module('LessonDemo.services', [])
         };
     })
 
-    .factory("SandboxProvider", function (MaterialProvider, UserdataProvider, LessonService) {
+    .factory("SandboxProvider", function (MaterialProvider, UserdataProvider, GraderProvider, LessonService) {
 
         function Sandbox() {
 
@@ -322,6 +349,10 @@ angular.module('LessonDemo.services', [])
 
             Sandbox.prototype.getParentActivityData = function (parentId) {
                 return MaterialProvider.getMaterial(parentId);
+            }
+
+            Sandbox.prototype.getGrader = function (graderId) {
+                return GraderProvider.getGrader(graderId);
             }
 
             //a emitter for communications between modules

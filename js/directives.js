@@ -350,12 +350,21 @@ angular.module('LessonDemo.directives', [])
                                     }
                                 }
                                 activityUserdata.summary['correct_count'] = correctCount;
+                                activityUserdata.summary['correct_percent'] = parseInt(correctCount * 100 / activityData.problems.length);
                                 //if the activity is final quiz, save the userdata to lessonSummary object
                                 var lessonSummary = {};
                                 if ((typeof activityData.is_final !== "undefined") && (activityData.is_final)) {
                                     lessonSummary.correctCount = correctCount;
                                     lessonSummary.correctPercent = parseInt(correctCount * 100 / activityData.problems.length);
                                 }
+
+                                //achievements checking
+                                var graderPromise = activitySandbox.getGrader("Understand_Right_Away");
+                                graderPromise.then(function (graderFunction) {
+                                    graderFunction(activityUserdata.summary.correct_percent, activityUserdata.summary.correct_count, "");
+                                }, function (errorMsg) {
+                                    console.log(errorMsg);
+                                })
                             }
 
                             if (args.should_transition) {
