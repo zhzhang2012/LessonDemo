@@ -8,7 +8,30 @@
 
 angular.module('LessonDemo.directives', [])
 
-    .directive("chapter", function (SandboxProvider, $routeParams) {
+    .directive("subject", function (SandboxProvider, $routeParams, $location) {
+
+        //create the subject sandbox
+        var subjectSandbox = SandboxProvider.getSandbox();
+
+        return {
+            restrict: "E",
+            link: function ($scope) {
+                var rootMaterial = subjectSandbox.getRoot();
+                var subjectMaterial = subjectSandbox.getSubjectMaterial($routeParams.sid);
+
+                $scope.subjects = rootMaterial.subjects;
+                $scope.chapters = subjectMaterial.chapters;
+                $scope.enterSubject = function (subjectId) {
+                    $location.path('/subject/' + subjectId);
+                }
+                $scope.enterChapter = function (chapterId) {
+                    $location.path('/subject/' + $routeParams.sid + '/chapter/' + chapterId);
+                }
+            }
+        }
+    })
+
+    .directive("chapter", function (SandboxProvider, $routeParams, $location) {
 
         //create the chapter sandbox
         var chapterSandbox = SandboxProvider.getSandbox();
@@ -46,6 +69,10 @@ angular.module('LessonDemo.directives', [])
                         }
                     }
                 })
+
+                $scope.returnToSubject = function () {
+                    $location.path('/subject/' + $routeParams.sid);
+                }
             }
         }
     })
@@ -69,16 +96,18 @@ angular.module('LessonDemo.directives', [])
 
             callbacks: {
                 onwelcome: function (event, from, to) {
-                    $location.path('/chapter/chapter1');
+                    $location.path('subject/' + $routeParams.sid + '/chapter/' + $routeParams.cid);
                 },
                 onlearn: function (event, from, to, lesson_id, activity_id) {
-                    $location.path('chapter/chapter1/lesson/' + lesson_id + '/activity/' + activity_id);
+                    $location.path('subject/' + $routeParams.sid + '/chapter/' + $routeParams.cid +
+                        '/lesson/' + lesson_id + '/activity/' + activity_id);
                 }
             }
         });
 
         var continueLesson = function (lesson_id, activity_id) {
-            $location.path('chapter/chapter1/lesson/' + lesson_id + '/activity/' + activity_id);
+            $location.path('subject/' + $routeParams.sid + '/chapter/' + $routeParams.cid +
+                '/lesson/' + lesson_id + '/activity/' + activity_id);
         }
 
         return {

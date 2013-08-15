@@ -12,6 +12,78 @@ angular.module('LessonDemo.services', [])
         var Material = {};
         var materialMap = {};
 
+        var getRoot = function () {
+            return {
+                subjects: [
+                    {
+                        id: "chinese",
+                        title: "语文"
+                    },
+                    {
+                        id: "math",
+                        title: "数学"
+                    },
+                    {
+                        id: "english",
+                        title: "英语"
+                    }
+                ]
+            }
+        }
+
+        var getSubjectMaterial = function (subjectId) {
+            if (subjectId == "chinese") {
+                return {
+                    chapters: [
+                        {
+                            id: "chapter1",
+                            title: "走一步，再走一步"
+                        },
+                        {
+                            id: "chapter2",
+                            title: "陈涉世家"
+                        },
+                        {
+                            id: "chapter3",
+                            title: "出师表"
+                        }
+                    ]};
+            } else if (subjectId == "math") {
+                return {
+                    chapters: [
+                        {
+                            id: "chapter4",
+                            title: "求导"
+                        },
+                        {
+                            id: "chapter5",
+                            title: "积分"
+                        },
+                        {
+                            id: "chapter6",
+                            title: "级数"
+                        }
+                    ]};
+            } else if (subjectId == "english") {
+                return {
+                    chapters: [
+                        {
+                            id: "chapter7",
+                            title: "定语从句"
+                        },
+                        {
+                            id: "chapter8",
+                            title: "非谓语动词"
+                        },
+                        {
+                            id: "chapter9",
+                            title: "虚拟语气"
+                        }
+                    ]
+                }
+            }
+        }
+
         var getChapterMaterial = function (chapterId) {
             var deferred = $q.defer();
             var getChapterPromise = deferred.promise;
@@ -113,14 +185,17 @@ angular.module('LessonDemo.services', [])
         }
 
         return {
-            getLessonMaterial: getLessonMaterial,
+            getRoot: getRoot,
+            getSubjectMaterial: getSubjectMaterial,
             getChapterMaterial: getChapterMaterial,
+            getLessonMaterial: getLessonMaterial,
             getActivityMaterial: getActivityMaterial,
             getMaterial: getMaterial
         }
     })
 
-    .factory("UserdataProvider", function (MaterialProvider, $q) {
+    .
+    factory("UserdataProvider", function (MaterialProvider, $q) {
         var USERDATA = {};
         var userdataMap = {};
 
@@ -301,6 +376,14 @@ angular.module('LessonDemo.services', [])
     .factory("SandboxProvider", function (MaterialProvider, UserdataProvider, GraderProvider, LessonService) {
 
         function Sandbox() {
+
+            Sandbox.prototype.getRoot = function () {
+                return MaterialProvider.getRoot();
+            }
+
+            Sandbox.prototype.getSubjectMaterial = function (subjectId) {
+                return MaterialProvider.getSubjectMaterial(subjectId);
+            }
 
             Sandbox.prototype.getChapterMaterial = function (chapterId) {
                 return MaterialProvider.getChapterMaterial(chapterId);

@@ -8,8 +8,14 @@
 
 angular.module('LessonDemo.controllers', [])
 
-    //chapter controller
-    .controller('initCtrl', function () {
+    //root controller
+    .controller('rootCtrl', function ($location, MaterialProvider) {
+        var subjects = MaterialProvider.getRoot()['subjects'];
+        $location.path('/subject/' + subjects[0].id);
+    })
+
+    //subject controller
+    .controller('subjectCtrl', function () {
 
     })
 
