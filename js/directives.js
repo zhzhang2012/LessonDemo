@@ -342,6 +342,8 @@ angular.module('LessonDemo.directives', [])
                         }
                     }
                     $scope.problems = activityData.problems.slice(currProblem);
+                    //update the progress bar
+                    $scope.progressWidth = (currProblem + 1) * 100 / activityData.problems.length;
                 }
 
                 $scope.pauseLearn = function () {
@@ -425,7 +427,6 @@ angular.module('LessonDemo.directives', [])
                                             }
                                         }
                                     }
-                                    console.log(userInfo);
                                 }
                             }
 
@@ -453,6 +454,9 @@ angular.module('LessonDemo.directives', [])
                                 } else {
                                     //do a page transition and show the next problem
                                     PageTransitions.nextPage(10, $("#buttonContainer"));
+                                    //update the progress bar
+                                    console.log
+                                    $scope.progressWidth = (index + 2) * 100 / activityData.problems.length;
                                 }
                             } else {
                                 //if the activity both shows snawers and shows summary, apply the same logic of the
