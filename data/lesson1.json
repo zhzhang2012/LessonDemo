@@ -20,7 +20,7 @@
             "title": "字词讲解第一部分",
             "type": "lecture",
             "redoable": true,
-            "body": "走一步，再走一步字词讲解<jpg src='test.jpg'></jpg><vid src='走一步，再走一步-1.mp4'></vid>",
+            "body": "走一步，再走一步字词讲解<jpg src='test.jpg'></jpg><pdf src='freeculture.pdf'></pdf>",
             "level": "easy",
             "achievements": [
                 {
@@ -61,7 +61,7 @@
                     "id": "a2p1",
                     "parent_id": "activity2",
                     "title": "选出下面加引号多音字的正确读音：",
-                    "type": "singlechoice",
+                    "type": "multichoice",
                     "body": "雨季开始时， 我们预料有“闷热”的天气。",
                     "level": "easy",
                     "choices": [
@@ -78,7 +78,7 @@
                         {
                             "id": "a2p1c3",
                             "body": "Měn",
-                            "is_correct": false
+                            "is_correct": true
                         },
                         {
                             "id": "a2p1c4",

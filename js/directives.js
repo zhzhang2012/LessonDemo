@@ -406,6 +406,7 @@ angular.module('LessonDemo.directives', [])
                                         duration: activityUserdata.duration
                                     };
                                     for (var i = 0; i < activityData.achievements.length; i++) {
+                                        //check if the student has already got this achievement
                                         if (typeof userInfo.achievements[activityData.achievements[i].id] == "undefined") {
                                             //create the custon grader using the grader template
                                             if (typeof activityData.achievements[i].condition != "undefined") {
@@ -417,7 +418,7 @@ angular.module('LessonDemo.directives', [])
 
                                             //apply the userdata using the created grader
                                             if (activitySandbox.createGrader(grader, userDataToGrade)) {
-                                                //write the new badge in
+                                                //write the new badge in userinfo
                                                 userInfo.achievements[activityData.achievements[i].id] = {
                                                     id: activityData.achievements[i].id
                                                 }
@@ -473,6 +474,7 @@ angular.module('LessonDemo.directives', [])
                         //check if the student achieves certain achievements
                         if (typeof activityData.achievements != "undefined") {
                             for (var i = 0; i < activityData.achievements.length; i++) {
+                                //check if the student has already got this achievement
                                 if (typeof userInfo.achievements[activityData.achievements[i].id] == "undefined") {
                                     //create the custon grader using the grader template
                                     if (typeof activityData.achievements[i].condition != "undefined") {
@@ -508,14 +510,32 @@ angular.module('LessonDemo.directives', [])
         }
     })
 
-    .directive("vid", function ($compile, $routeParams) {
+    .directive("vid", function ($compile, $routeParams, $route) {
         return {
             restrict: "E",
             link: function ($scope, $element, $attrs) {
-                var template = "<video style='width:500px;' src='http://192.168.3.100:3000/exercise/v1/lesson/" + $routeParams.lid + "/"
-                    + $attrs.src + "' controls></video>";
+                var template = "<video id='video' style='width:500px;' src='http://192.168.3.100:3000/exercise/v1/lesson/" + $routeParams.lid + "/"
+                    + $attrs.src + "' controls></video>" +
+                    "<button ng-click='playVideo()'>播放视频</button>";
                 $element.html(template);
                 $compile($element.contents())($scope);
+
+                //when click the button, the video becomes full-screen and play
+                var video = $element.contents()[0];
+                $scope.playVideo = function () {
+                    video.webkitRequestFullScreen();
+                    video.play();
+                }
+                //ensure that when the student returns to the lecture page from full-screen mode,
+                //the page is reloaded
+                video.addEventListener('webkitfullscreenchange', function () {
+                    if (!document.webkitIsFullScreen) {
+                        //TODO
+                        //console.log("A");
+                        $route.reload();
+                    }
+                }, true);
+
             }
         }
     })
@@ -544,6 +564,75 @@ angular.module('LessonDemo.directives', [])
         }
     })
 
+    .directive("pdf", function ($compile) {
+        return {
+            restrict: "E",
+            link: function ($scope, $element, $attrs) {
+                var template = "<div id='container'><canvas id='the-canvas' border='1px solid black'></canvas>" +
+                    "</div><button ng-click='goPrevious()'>上一页</button>" +
+                    "<button ng-click='goNext()'>下一页</button>" +
+                    "<button ng-click='fullscreen()'>全屏模式</button>";
+                $element.html(template);
+                $compile($element.contents())($scope);
+
+                PDFJS.disableWorker = true;
+                var pdfDoc = null,
+                    pageNum = 1,
+                    scale = 0.8,
+                    canvas = $element.contents()[0].children[0],
+                    ctx = canvas.getContext('2d');
+
+                // Get page info from document, resize canvas accordingly, and render page
+                function renderPage(num) {
+                    // Using promise to fetch the page
+                    pdfDoc.getPage(num).then(function (page) {
+                        var viewport = page.getViewport(scale);
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+
+                        // Render PDF page into canvas context
+                        var renderContext = {
+                            canvasContext: ctx,
+                            viewport: viewport
+                        };
+                        page.render(renderContext);
+                    });
+
+                    // Update page counters
+                    //document.getElementById('page_num').textContent = pageNum;
+                    //document.getElementById('page_count').textContent = pdfDoc.numPages;
+                }
+
+                // Go to previous page
+                $scope.goPrevious = function () {
+                    if (pageNum <= 1)
+                        return;
+                    pageNum--;
+                    renderPage(pageNum);
+                }
+                // Go to next page
+                $scope.goNext = function () {
+                    if (pageNum >= pdfDoc.numPages)
+                        return;
+                    pageNum++;
+                    renderPage(pageNum);
+                }
+                // Become fullcreen reading
+                $scope.fullscreen = function () {
+                    var container = $element.contents()[0];
+                    scale = 'pafe-fit';
+                    container.webkitRequestFullScreen();
+                }
+
+                // Asynchronously download PDF as an ArrayBuffer
+                PDFJS.getDocument('data/' + $attrs.src).then(function (_pdfDoc) {
+                    pdfDoc = _pdfDoc;
+                    renderPage(pageNum);
+                });
+            }
+        }
+    })
+
     //the outsider of problem directive used for getting the problem DOM collection
     .
     directive("switch", function ($timeout) {
@@ -561,6 +650,7 @@ angular.module('LessonDemo.directives', [])
 
         //create the problem sandbox
         var problemSandbox = SandboxProvider.getSandbox();
+
 
         return {
             restrict: "E",
@@ -592,6 +682,44 @@ angular.module('LessonDemo.directives', [])
                     }
                 }
 
+                //apply choosing logic
+                $scope.checked = [];
+                for (var i = 0; i < currProblem.choices.length; i++) {
+                    $scope.checked.push("default");
+                }
+
+                $scope.lastChecked = -1;
+                var singleChoice = function (choiceId, choiceIndex) {
+                    if (!$scope.submitted) {
+                        if ($scope.lastChecked != -1) {
+                            $scope.checked[$scope.lastChecked] = "default";
+                        }
+                        $scope.checked[choiceIndex] = "choose";
+                        $scope.lastChecked = choiceIndex;
+                        $scope.answer[currProblem.id] = choiceId;
+                    }
+                };
+
+                var multiChoice = function (choiceId, choiceIndex) {
+                    if (!$scope.submitted) {
+                        if ($scope.checked[choiceIndex] == "choose") {
+                            $scope.checked[choiceIndex] = "default";
+                            $scope.answer[choiceId] = false;
+                        } else {
+                            $scope.checked[choiceIndex] = "choose";
+                            $scope.answer[choiceId] = true;
+                        }
+                    }
+                };
+
+                if (currProblem.type == "singlechoice") {
+                    $scope.chooseOption = singleChoice;
+                } else if (currProblem.type == "multichoice") {
+                    $scope.chooseOption = multiChoice;
+                } else {
+
+                }
+
                 //when the student complete the problem
                 $scope.submitAnswer = function () {
                     //disable the choices inputs
@@ -620,6 +748,20 @@ angular.module('LessonDemo.directives', [])
                         $scope.showExplanation = true;
                         $scope.hideSubmitButton = true;
                         $scope.showContinueButton = true;
+
+                        //show the correct and wrong answer
+                        if (currProblem.type != "singlefilling") {
+                            for (var i = 0; i < currProblem.choices.length; i++) {
+                                if (currProblem.choices[i].is_correct) {
+                                    $scope.checked[i] = "correct";
+                                } else if (((currProblem.type == "singlechoice") &&
+                                    ($scope.answer[currProblem.id] == currProblem.choices[i].id)) ||
+                                    ((currProblem.type == "multichoice") &&
+                                        ($scope.answer[currProblem.choices[i].id]))) {
+                                    $scope.checked[i] = "wrong";
+                                }
+                            }
+                        }
 
                         //problemSandbox.sendEvent("showAnswerBeforeContinue", $scope);
                         problemSandbox.sendEvent('problemComplete_' + currProblem.id, $scope, {should_transition: false});
